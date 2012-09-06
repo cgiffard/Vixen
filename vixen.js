@@ -5,7 +5,7 @@
 (function(glob) {
 	"use strict";
 	
-	function Vixen(mediaObject) {
+	function Vixen(mediaObject,options) {
 		
 		if (!(mediaObject instanceof HTMLVideoElement ||
 				mediaObject instanceof HTMLAudioElement))
@@ -13,6 +13,7 @@
 		
 		this.media = mediaObject;
 		this.media.uiController = this;
+		this.options = options && options instanceof Object ? options : {};
 		this.ui = {};
 		
 		// For css classes...
@@ -51,12 +52,18 @@
 		// Build the UI.
 		// Create scrubber
 		c("div","scrubber")
-			.a(c("div","loadindicator"))
-			.a(c("div","thumb"));
+			.a(c("div","loadprogress"))
+			.a(
+				c("div","playprogress").a(
+					c("div","thumb")));
 		
 		// Create volume control...
 		c("div","volumegroup")
-			.a(c("button","mute").t("Mute"));
+			.a(c("button","mute").t("Mute"))
+			.a(c("div","volumeslider")
+				.a(
+					c("div","volumesliderinner")
+						.a(c("div","volumethumb"))));
 		
 		// Bulk of the UI...
 		c("div","container")
@@ -69,18 +76,25 @@
 					.a(c("label","elapsed"))
 					.a(self.ui.scrubber)
 					.a(c("label","remaining"))
-					.a(self.ui.volumegroup)
-			);
+					.a(self.ui.volumegroup));
 		
 		// Is the fullscreen API present in the browser?
-		if (self.requestFullScreen) {
+		// Is this a video (i.e. does fullscreen even make sense?)
+		if (self.requestFullScreen &&
+			self.media instanceof HTMLVideoElement) {
 			
 			// Append a fullscreen button
 			self.ui.toolbar.a(
 				c("button","fullscreenbutton")
 					.t("Fullscreen"));
 		}
-			
+		
+		// Provide a class based on whether we're an audio or video player
+		if (self.media instanceof HTMLVideoElement) {
+			self.ui.container.c("video");
+		} else {
+			self.ui.container.c("audio");
+		}
 		
 		// Now swap out the media for the container
 		c.replace(self.media,self.ui.container);
@@ -105,12 +119,22 @@
 			self.ui.fullscreenbutton.on("click",self.fullscreen);
 		}
 		
+		// Handle dragging for volume and scrubbing bar
+		self.ui.scrubber.ondrag(function(percentage) {
+			self.jumpTo(percentage.x * self.media.duration);
+		});
+		
+		// And now volume slider. (y) assumes vertical orientation.
+		self.ui.volumeslider.ondrag(function(percentage) {
+			self.volume(percentage.y);
+		});
+		
 		// media events to listen to
 		[
 			"abort",
-			"click",
 			"canplay",
 			"canplaythrough",
+			"click",
 			"durationchange",
 			"emptied",
 			"ended",
@@ -131,8 +155,6 @@
 			"volumechange",
 			"waiting" ].forEach(function(evt) {
 			
-			self.updateUI();
-			
 			// Just throw them all out to the catchall...
 			self.media.on(evt,self.handleMediaEvent);
 		});
@@ -141,11 +163,34 @@
 	}
 	
 	Vixen.prototype.updateUI = function() {
+		var	self			= this,
+			duration		= self.media.duration || 0,
+			currentTime 	= self.media.currentTime,
+			playPercentage	= (currentTime/duration)*100,
+			loadPercentage	= 0,
+			loadedTo		= 0;
 		
+		if (currentTime > duration || !currentTime) currentTime = 0;
+		
+		// This is a little simplistic, but it works. Get the largest endTime
+		// for buffered time ranges.
+		for (var range = 0; range < self.media.buffered.length; range ++) {
+			if (self.media.buffered.end(range) > loadedTo)
+				loadedTo = self.media.buffered.end(range);
+				loadPercentage = (loadedTo/duration)*100;
+		}
+		
+		self.ui.playprogress.s("width",playPercentage+"%");
+		self.ui.loadprogress.s("width",loadPercentage+"%");
+		self.ui.volumesliderinner.s("height",(self.media.volume*100)+"%");
+		
+		self.emit("updateui");
 	};
 	
 	Vixen.prototype.handleMediaEvent = function(eventData) {
 		var self = this;
+		
+		self.updateUI();
 		
 		switch (eventData.type) {
 			case "click":
@@ -167,17 +212,13 @@
 		// seekable
 		// seeking
 		// startTime
-		console.log([].slice.call(arguments,0).pop().type);
-		
-		
 		
 		self.emit(eventData.type);
 	};
 	
 	Vixen.prototype.load = function() {
-		if (this) {
-			
-		}
+		
+		this.media.load();
 	};
 	
 	Vixen.prototype.playpause = function() {
@@ -236,6 +277,9 @@
 	*/
 	Vixen.prototype.jumpTo = function(time) {
 		
+		
+		
+		this.media.currentTime = time;
 		
 		return this;
 	};

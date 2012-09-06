@@ -1,0 +1,52 @@
+* {
+	box-sizing: border-box;
+}
+
+.vixen-scrubber {
+	width: 500px;
+	height: 10px;
+	background-color: grey;
+	position: relative;
+}
+
+.vixen-playprogress {
+	height: 10px;
+	min-width: 10px;
+	position: relative;
+	background-color: black;
+}
+
+.vixen-loadprogress {
+	height: 10px;
+	position: absolute;
+	background-color: orange;
+}
+
+.vixen-thumb, .vixen-volumethumb {
+	background-color: red;
+	height: 10px;
+	width: 10px;
+	position: absolute;
+	right: 0px;
+	top: 0px;
+}
+
+.vixen-volumeslider {
+	position: relative;
+	height: 50px;
+	width: 10px;
+	background-color: grey;
+}
+
+.vixen-volumesliderinner {
+	position: absolute;
+	width: 10px;
+	min-height: 10px;
+	max-height: 45px;
+	background-color: black;
+	bottom: 0px;
+}
+
+.vixen-volumethumb {
+	margin-top: -5px;
+}

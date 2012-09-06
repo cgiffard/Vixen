@@ -61,6 +61,61 @@
 				return tmp;
 			};
 			
+			// Style an element
+			tmp.s = function(styleName,value) {
+				tmp.style[styleName] = value;
+				return tmp;	
+			};
+			
+			// Little helper for implementing draggable functionality
+			tmp.ondrag = function(handler) {
+				tmp.addEventListener("mousedown",function(evt) {
+					// We don't listen to anything other than a nice left-click.
+					if (evt.button !== 0) return;
+					
+					var width = tmp.offsetWidth,
+						height = tmp.offsetHeight,
+						on = window.addEventListener,
+						offsetLeft = 0,
+						offsetTop = 0,
+						pointerNode = tmp;
+					
+					tmp.dragging = true;
+					
+					console.log(width,height);
+					console.log(evt);
+					
+					while (pointerNode.parentNode) {
+						offsetLeft += pointerNode.offsetLeft;
+						offsetTop += pointerNode.offsetTop;
+						pointerNode = pointerNode.parentNode;
+					}
+					
+					console.log(offsetLeft,offsetTop);
+					
+					if (!tmp.moveListener) {
+						tmp.moveListener =
+							on("mousemove",function(evt) {
+							if (tmp.dragging) {
+								var currentX = evt.clientX - offsetLeft,
+									currentY = evt.clientY - offsetTop;
+								console.log(currentX / width,1 - (currentY / height));
+								// We invert the y calculation to follow the
+								// logical order vertical sliders work...
+								handler({
+									"x": currentX / width,
+									"y": 1 - (currentY / height) // invert
+								});
+							}
+						});
+						
+						on("mouseup",function(evt) {
+							tmp.dragging = false;
+						});
+					}
+				});
+			};
+			
 			// Now add the object to the UI map.
 			if (place) {
 				if (typeof self.ui.place !== "undefined")
