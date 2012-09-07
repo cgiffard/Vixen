@@ -1,6 +1,6 @@
 // Vixen.
 
-/*global HTMLVideoElement:true, HTMLAudioElement:true, document:true, module:true, createVixel:true */
+/*global HTMLVideoElement:true, HTMLAudioElement:true, HTMLElement:true, document:true, module:true, createVixel:true, window:true */
 
 (function(glob) {
 	"use strict";
@@ -34,8 +34,9 @@
 		this.updateUI();
 		
 		// A bit of state
-		this.fullscreen = false;
+		this.isfullscreen = false;
 		this.playing = false;
+		this.readyState = this.media.readyState;
 		
 		return this;
 	}
@@ -72,7 +73,7 @@
 			.a(
 				c("div","toolbar")
 					.r("toolbar")
-					.a(c("button","playbutton").t("Play"))
+					.a(c("button","playpause").t("Play"))
 					.a(c("label","elapsed"))
 					.a(self.ui.scrubber)
 					.a(c("label","remaining"))
@@ -85,7 +86,7 @@
 			
 			// Append a fullscreen button
 			self.ui.toolbar.a(
-				c("button","fullscreenbutton")
+				c("button","fullscreen")
 					.t("Fullscreen"));
 		}
 		
@@ -105,6 +106,14 @@
 		// And switch off the native controls for the media element.
 		self.media.removeAttribute("controls");
 		
+		// Just check whether our sliders are horizontal or vertical...
+		// A simple width vs. height check should do.
+		self.ui.scrubber.vertical =
+			self.ui.scrubber.offsetHeight > self.ui.scrubber.offsetWidth;
+		
+		self.ui.volumeslider.vertical =
+			self.ui.volumeslider.offsetHeight > self.ui.volumeslider.offsetWidth;
+		
 		// Enable chaining...
 		return self;
 	};
@@ -112,21 +121,48 @@
 	Vixen.prototype.attachEvents = function() {
 		var self = this;
 		
-		// Events
-		self.ui.playbutton.on("click",self.playpause);
+		// Button Events
+		self.ui.playpause.on("click",self.playpause);
 		
-		if (self.ui.fullscreenbutton) {
-			self.ui.fullscreenbutton.on("click",self.fullscreen);
+		self.ui.mute.on("click",function() {
+			if (self.media.volume > 0) {
+				self.ui.mute.t("Unmute");
+				self.previousVolume = self.media.volume;
+				self.volume(0);
+			} else {
+				self.ui.mute.t("Mute");
+				self.volume(self.previousVolume);
+			}
+		});
+		
+		if (self.ui.fullscreen) {
+			self.ui.fullscreen.on("click",self.fullscreen);
 		}
 		
 		// Handle dragging for volume and scrubbing bar
 		self.ui.scrubber.ondrag(function(percentage) {
-			self.jumpTo(percentage.x * self.media.duration);
+			var vertical = this.vertical,
+				value = vertical ? percentage.y : percentage.x,
+				styleprop = vertical ? "height" : "width";
+			
+			self.ui.playprogress.s(styleprop,(value*100)+"%");
+			self.jumpTo(value * self.media.duration);
 		});
 		
 		// And now volume slider. (y) assumes vertical orientation.
 		self.ui.volumeslider.ondrag(function(percentage) {
-			self.volume(percentage.y);
+			var vertical = this.vertical,
+				value = vertical ? percentage.y : percentage.x,
+				styleprop = vertical ? "height" : "width";
+			
+			self.ui.volumesliderinner.s(styleprop,(value*100)+"%");
+			self.volume(value);
+		});
+		
+		// Prevent selection and default actions happening to anything
+		// in the toolbar...
+		self.ui.toolbar.on("mousedown",function(evt) {
+			evt.preventDefault();
 		});
 		
 		// media events to listen to
@@ -159,13 +195,19 @@
 			self.media.on(evt,self.handleMediaEvent);
 		});
 		
+		// Some themes are going to need a bit of help from JS.
+		// Handle window resize...
+		window.addEventListener("resize",function() {
+			self.updateUI();
+		},"false");
+		
 		return self;
 	}
 	
 	Vixen.prototype.updateUI = function() {
 		var	self			= this,
 			duration		= self.media.duration || 0,
-			currentTime 	= self.media.currentTime,
+			currentTime		= self.media.currentTime,
 			playPercentage	= (currentTime/duration)*100,
 			loadPercentage	= 0,
 			loadedTo		= 0;
@@ -180,9 +222,32 @@
 				loadPercentage = (loadedTo/duration)*100;
 		}
 		
-		self.ui.playprogress.s("width",playPercentage+"%");
+		if (!self.ui.scrubber.dragging)
+			self.ui.playprogress.s("width",playPercentage+"%");
+		
 		self.ui.loadprogress.s("width",loadPercentage+"%");
-		self.ui.volumesliderinner.s("height",(self.media.volume*100)+"%");
+		
+		if (!self.ui.volumeslider.dragging)
+			self.ui.volumesliderinner.s("height",(self.media.volume*100)+"%");
+		
+		// Get offset dimension (either width or height, depending on whether
+		// the scrubbing bar is oriented horizontally or vertically) of all
+		// elements in the toolbar that aren't the scrubber itself...
+		var toolbarUIDimension = 0,
+			vertical = self.ui.scrubber.vertical,
+			toolbar = self.ui.toolbar,
+			toolbarRealEstate = 
+				vertical ? toolbar.offsetWidth : toolbar.offsetWidth;
+		
+		[].slice.call(self.ui.toolbar.childNodes).forEach(function(node) {
+			if (node instanceof HTMLElement && node !== self.ui.scrubber) {
+				toolbarUIDimension +=
+					vertical ? node.offsetHeight: node.offsetWidth;
+			}
+		});
+		
+		var spaceAvailable = toolbarRealEstate - (toolbarUIDimension*1.1);
+		self.ui.scrubber.s(vertical? "height" : "width",spaceAvailable + "px");
 		
 		self.emit("updateui");
 	};
@@ -192,9 +257,47 @@
 		
 		self.updateUI();
 		
+		/* 
+		
+		events:
+		
+		"abort",
+		"canplay",
+		"canplaythrough",
+		"click",
+		"durationchange",
+		"emptied",
+		"ended",
+		"error",
+		"loadeddata",
+		"loadedmetadata",
+		"loadstart",
+		"pause",
+		"play",
+		"playing",
+		"progress",
+		"ratechange",
+		"seeked",
+		"seeking",
+		"stalled",
+		"suspend",
+		"timeupdate",
+		"volumechange",
+		"waiting" 
+		*/
+		
+		
 		switch (eventData.type) {
 			case "click":
 				self.playpause();
+				break;
+			
+			case "error":
+			
+				break;
+				
+			case "ended":
+				
 				break;
 			
 		}
@@ -232,7 +335,7 @@
 	
 	Vixen.prototype.play = function() {
 		this.media.play();
-		this.ui.playbutton.t("Pause");
+		this.ui.playpause.t("Pause");
 		this.ui.container.c("playing");
 		this.playing = true;
 		
@@ -241,7 +344,7 @@
 	
 	Vixen.prototype.pause = function() {
 		this.media.pause();
-		this.ui.playbutton.t("Play");
+		this.ui.playpause.t("Play");
 		this.ui.container.c("playing",-1);
 		this.playing = false;
 		
@@ -249,16 +352,16 @@
 	};
 	
 	Vixen.prototype.fullscreen = function() {
-		if (!this.fullscreen) {
+		if (!this.isfullscreen) {
 			this.requestFullScreen.call(this.ui.container);
 			this.ui.container.c("fullscreen");
-			this.ui.fullscreenbutton.t("Exit Fullscreen");
-			this.fullscreen = true;
+			this.ui.fullscreen.t("Exit Fullscreen");
+			this.isfullscreen = true;
 		} else {
 			this.cancelFullScreen.call(document);
 			this.ui.container.c("fullscreen",-1);
-			this.ui.fullscreenbutton.t("Fullscreen");
-			this.fullscreen = false;
+			this.ui.fullscreen.t("Fullscreen");
+			this.isfullscreen = false;
 		}
 	};
 	
@@ -277,9 +380,8 @@
 	*/
 	Vixen.prototype.jumpTo = function(time) {
 		
-		
-		
 		this.media.currentTime = time;
+		this.updateUI();
 		
 		return this;
 	};
@@ -307,6 +409,9 @@
 			
 			if (volume < 0 || volume > 1)
 				throw new Error("Volume outside of acceptable range.");
+			
+			if (volume === 0)
+				this.ui.mute.t("Unmute");
 			
 			this.media.volume = volume;
 			return this;

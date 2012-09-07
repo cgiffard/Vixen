@@ -33,9 +33,10 @@
 			// Add or remove a class from the element
 			tmp.c = function(classN,remove) {
 				if (remove < 0) {
+					var rep = new RegExp(Vixel.namespace(classN),"ig");
 					tmp.className =
 						tmp.className
-							.replace(Vixel.namespace(classN),"")
+							.replace(rep,"")
 							.replace(/\s+/," ")
 							.replace(/\s+$/,"")
 							.replace(/^\s+/,"");
@@ -76,39 +77,35 @@
 					var width = tmp.offsetWidth,
 						height = tmp.offsetHeight,
 						on = window.addEventListener,
-						offsetLeft = 0,
-						offsetTop = 0,
+						offsetLeft = tmp.offsetLeft,
+						offsetTop = tmp.offsetTop,
 						pointerNode = tmp;
 					
 					tmp.dragging = true;
 					
-					console.log(width,height);
-					console.log(evt);
-					
-					while (pointerNode.parentNode) {
-						offsetLeft += pointerNode.offsetLeft;
-						offsetTop += pointerNode.offsetTop;
-						pointerNode = pointerNode.parentNode;
+					function eventHandler(evt) {
+						if (evt.preventDefault) evt.preventDefault();
+						evt.cancelBubble = true;
+						
+						if (tmp.dragging) {
+							// We invert the y calculation to follow the
+							// logical visual order vertical sliders work...
+							var currentX = evt.clientX - offsetLeft,
+								currentY = evt.clientY - offsetTop,
+								x = currentX / width,
+								y = 1-(currentY / height);
+							
+							handler.call(tmp,{
+								"x": x >= 0 ? x <= 1 ? x : 1 : 0,
+								"y": y >= 0 ? y <= 1 ? y : 1 : 0
+							});
+						}
 					}
 					
-					console.log(offsetLeft,offsetTop);
+					eventHandler(evt);
 					
 					if (!tmp.moveListener) {
-						tmp.moveListener =
-							on("mousemove",function(evt) {
-							if (tmp.dragging) {
-								var currentX = evt.clientX - offsetLeft,
-									currentY = evt.clientY - offsetTop;
-								console.log(currentX / width,1 - (currentY / height));
-								// We invert the y calculation to follow the
-								// logical order vertical sliders work...
-								handler({
-									"x": currentX / width,
-									"y": 1 - (currentY / height) // invert
-								});
-							}
-						});
-						
+						tmp.moveListener = on("mousemove",eventHandler);
 						on("mouseup",function(evt) {
 							tmp.dragging = false;
 						});

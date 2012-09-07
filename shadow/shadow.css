@@ -1,0 +1,295 @@
+@font-face {
+  font-family: "SSStandard";
+  src: url('ss-standard.eot');
+  src: url('ss-standard.eot?#iefix') format('embedded-opentype'), 
+	   url('ss-standard.woff') format('woff'), 
+	   url('ss-standard.ttf')  format('truetype'),
+	   url('ss-standard.svg#SSStandard') format('svg');
+  font-weight: normal;
+  font-style: normal;
+}
+
+.vixen-video button:after,
+.vixen-video button:before {
+	font-family: "SSStandard";
+	font-style: normal;
+	font-weight: normal;
+	text-decoration: none;
+	text-rendering: optimizeLegibility;
+	white-space: nowrap;
+	-webkit-font-feature-settings: "liga";
+	-moz-font-feature-settings: "liga=1";
+	-moz-font-feature-settings: "liga";
+	-ms-font-feature-settings: "liga" 1;
+	-o-font-feature-settings: "liga";
+	font-feature-settings: "liga";
+	-webkit-font-smoothing: antialiased;
+}
+
+.vixen-video, .vixen-video * {
+	padding: 0px;
+	margin: 0px;
+	box-sizing: border-box;
+	color: rgb(174,174,174);
+	background-color: transparent;
+	border: none;
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	-o-user-select: none;
+	user-select: none;
+}
+
+.vixen-container {
+	position: relative;
+	background-color: black;
+	min-width: 300px;
+	min-height: 30px;
+}
+
+.vixen-container.vixen-fullscreen {
+	position: absolute;
+	top: 0px;
+	width: 0px;
+	height: 100% !important;
+	width: 100%;
+}
+
+.vixen-video {
+	min-height: 180px;
+}
+
+.vixen-media {
+	width: 100%;
+	height: auto;
+	position: relative;
+	top: 0px;
+}
+
+.vixen-fullscreen .vixen-media {
+	height: 100%;
+}
+
+.vixen-toolbar {
+	position: absolute;
+	bottom: 0px;
+	margin-top: 29px;
+	height: 29px;
+	width: 100%;
+
+	border-top: solid rgb(76,76,76) 1px;
+	border-bottom: solid rgb(0,0,0) 1px;
+	background-color: rgb(20,20,20);
+
+	box-shadow: rgb(42,42,42) 0px -1px 0px !important;
+
+	/* Gradient. Keeping away from older IE - they can get 'authentically digital'. */
+	background-image: -webkit-gradient(linear, left top, left bottom, from(rgb(40, 40, 40)), to(rgb(19, 19, 19)));
+	background-image: -webkit-linear-gradient(top, rgb(40, 40, 40), rgb(19, 19, 19));
+	background-image: -moz-linear-gradient(top, rgb(40, 40, 40), rgb(19, 19, 19));
+	background-image: -o-linear-gradient(top, rgb(40, 40, 40), rgb(19, 19, 19));
+	background-image: -ms-linear-gradient(top, rgb(40, 40, 40), rgb(19, 19, 19));
+	background-image: linear-gradient(top, rgb(40, 40, 40), rgb(19, 19, 19));
+}
+
+.vixen-toolbar > * {
+	float: left;
+}
+
+.vixen-toolbar button {
+	width: 30px;
+	overflow: hidden;
+	line-height: 28px;
+	height: 28px;
+	text-align: center;
+	color: transparent;
+}
+
+.vixen-toolbar button:before {
+	display: block;
+	position:absolute;
+	z-index:10;
+	width: 30px;
+	line-height: 28px;
+	content: "\25CE";
+	color: rgb(174,174,174);
+	pointer-events: none;
+}
+
+.vixen-toolbar button:focus {
+	outline: none;
+	
+	background-image: -webkit-gradient(radial, 50% 50%,0,50% 50%,200, from(rgba(0, 0, 0, 0.00)), to(rgba(0, 0, 0, 0.50)));
+	background-image: -webkit-radial-gradient(50% 50%, rgba(0, 0, 0, 0.50), rgba(0, 0, 0, 0.00));
+	background-image: -moz-radial-gradient(50% 50%, rgba(0, 0, 0, 0.50), rgba(0, 0, 0, 0.00));
+	background-image: -o-radial-gradient(50% 50%, rgba(0, 0, 0, 0.50), rgba(0, 0, 0, 0.00));
+	background-image: -ms-radial-gradient(50% 50%, rgba(0, 0, 0, 0.50), rgba(0, 0, 0, 0.00));
+	background-image: radial-gradient(50% 50%, rgba(0, 0, 0, 0.50), rgba(0, 0, 0, 0.00));
+}
+
+.vixen-toolbar button:focus:before,
+.vixen-toolbar button:active:before,
+.vixen-toolbar button:hover:before {
+	color: white;
+	text-shadow: white 0px 0px 4px;
+}
+
+.vixen-toolbar .vixen-playpause:before {
+	content: "\25B6";
+}
+
+.vixen-playing .vixen-toolbar .vixen-playpause:before {
+	content: "\E8A0";
+}
+
+.vixen-toolbar .vixen-fullscreen:before {
+	content: "\2922";
+}
+
+.vixen-scrubber {
+	position: relative;
+	min-width: 200px;
+	height: 14px;
+	background-color: rgb(39,39,39);
+	top: 6px;
+
+	overflow: hidden;
+
+	border: solid rgb(10,10,10) 1px;
+	border-bottom-color: rgb(102,102,102);
+
+	-webkit-border-radius: 7px;
+	-moz-border-radius: 7px;
+	-o-border-radius: 7px;
+	-msie-border-radius: 7px;
+	border-radius: 7px;
+
+	background-image: -webkit-gradient(linear, left top, left bottom, from(rgb(39, 39, 39)), to(rgb(67, 66, 66)));
+	background-image: -webkit-linear-gradient(top, rgb(39, 39, 39), rgb(67, 66, 66));
+	background-image: -moz-linear-gradient(top, rgb(39, 39, 39), rgb(67, 66, 66));
+	background-image: -o-linear-gradient(top, rgb(39, 39, 39), rgb(67, 66, 66));
+	background-image: -ms-linear-gradient(top, rgb(39, 39, 39), rgb(67, 66, 66));
+	background-image: linear-gradient(top, rgb(39, 39, 39), rgb(67, 66, 66));
+}
+
+.vixen-playprogress {
+	height: 100%;
+	min-width: 10px;
+	position: absolute;
+	background-color: black;
+
+	-webkit-border-radius: 7px;
+	-moz-border-radius: 7px;
+	-o-border-radius: 7px;
+	-msie-border-radius: 7px;
+	border-radius: 7px;
+}
+
+.vixen-loadprogress {
+	height: 100%;
+	position: absolute;
+	background-color: rgba(0,0,0,0.3);
+
+	-webkit-border-radius: 7px;
+	-moz-border-radius: 7px;
+	-o-border-radius: 7px;
+	-msie-border-radius: 7px;
+	border-radius: 7px;
+
+	-webkit-transition: width 250ms ease-out;
+}
+
+.vixen-thumb, .vixen-volumethumb {
+	float: right;
+
+	width: 10px;
+	height: 10px;
+	margin-top: 1px;
+	-webkit-border-radius: 6px;
+	-moz-border-radius: 6px;
+	-o-border-radius: 6px;
+	border-radius: 6px;
+
+	overflow: hidden;
+
+	background-color: #dedcdc;
+	background-image: -webkit-gradient(linear, left top, left bottom, from(#dedcdc), to(#999595));
+	background-image: -webkit-linear-gradient(top, #dedcdc, #999595);
+	background-image: -moz-linear-gradient(top, #dedcdc, #999595);
+	background-image: -ms-linear-gradient(top, #dedcdc, #999595);
+	background-image: -o-linear-gradient(top, #dedcdc, #999595);
+	background-image: linear-gradient(top, #dedcdc, #999595);
+
+	/* Would ordinarily have included an MS filter fallback, but it makes
+	the scroll-thumb into a square, which looks worse than not having it at all. */
+
+	border: solid rgba(113,110,110,0.9) 1px;
+
+	-webkit-box-shadow: inset rgba(255,255,255,0.4) 1px 1px 0px,
+						rgba(0,0,0,0.36) 0px 2px 2px;
+	-moz-box-shadow:	inset rgba(255,255,255,0.4) 1px 1px 0px,
+						rgba(0,0,0,0.36) 0px 2px 2px;
+	-o-box-shadow:		inset rgba(255,255,255,0.4) 1px 1px 0px,
+						rgba(0,0,0,0.36) 0px 2px 2px;
+	box-shadow:			inset rgba(255,255,255,0.4) 1px 1px 0px,
+						rgba(0,0,0,0.36) 0px 2px 2px;
+}
+
+
+.vixen-toolbar .vixen-mute:before {
+	content: "volumehigh";
+}
+
+.vixen-volumegroup {
+	width: 30px;
+	padding-top: 60px;
+	height: 28px;
+	margin-top: -58px;
+	position: relative;
+}
+
+.vixen-volumeslider {
+	visibility: hidden;
+	position: absolute;
+	min-height: 50px;
+	margin-left: 7px;
+	margin-right: -30px;
+	width: 14px;
+	background-color: rgb(39,39,39);
+	top: 0px;
+	
+	border: solid rgb(10,10,10) 1px;
+	
+	-webkit-border-radius: 7px;
+	-moz-border-radius: 7px;
+	-o-border-radius: 7px;
+	-msie-border-radius: 7px;
+	border-radius: 7px;
+	
+	background-image: -webkit-gradient(linear, left top, right top, from(rgb(39, 39, 39)), to(rgb(67, 66, 66)));
+	background-image: -webkit-linear-gradient(left, rgb(39, 39, 39), rgb(67, 66, 66));
+	background-image: -moz-linear-gradient(left, rgb(39, 39, 39), rgb(67, 66, 66));
+	background-image: -o-linear-gradient(left, rgb(39, 39, 39), rgb(67, 66, 66));
+	background-image: -ms-linear-gradient(left, rgb(39, 39, 39), rgb(67, 66, 66));
+	background-image: linear-gradient(left, rgb(39, 39, 39), rgb(67, 66, 66));
+	
+	-webkit-box-shadow: rgb(255,255,255) 0px 0px 2px;
+}
+
+.vixen-volumesliderinner {
+	position: absolute;
+	width: 12px;
+	min-height: 10px;
+	bottom: 0px;
+	padding-right: 1px;
+	background-color: rgba(0,0,0,0.5);
+	
+	-webkit-border-radius: 7px;
+	-moz-border-radius: 7px;
+	-o-border-radius: 7px;
+	-msie-border-radius: 7px;
+	border-radius: 7px;
+}
+
+.vixen-volumegroup:hover .vixen-volumeslider {
+	visibility: visible;
+}
