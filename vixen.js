@@ -1,54 +1,65 @@
 // Vixen.
 
-/*global HTMLVideoElement:true, HTMLAudioElement:true, HTMLElement:true, document:true, module:true, createVixel:true, window:true */
+/*global HTMLVideoElement:true, HTMLAudioElement:true, HTMLElement:true,
+document:true, module:true, createVixel:true, window:true, localStorage:true */
 
 (function(glob) {
 	"use strict";
 	
 	function Vixen(mediaObject,options) {
+		var self = this;
 		
 		if (!(mediaObject instanceof HTMLVideoElement ||
 				mediaObject instanceof HTMLAudioElement))
 					throw new Error("Media input was not a media element.");
 		
-		this.media = mediaObject;
-		this.media.uiController = this;
-		this.options = options && options instanceof Object ? options : {};
-		this.ui = {};
+		self.media = mediaObject;
 		
-		this.sources =
+		// I'm trusting modern JS engines will be up to handling this
+		// circular reference (of which there's only one anyway.)
+		self.media.uiController = self;
+		self.options = options && options instanceof Object ? options : {};
+		self.ui = {};
+		
+		self.sources =
 			[].slice.call(document.querySelectorAll("source",self.media),0);
 		
 		// For css classes...
-		this.namespace = "vixen";
+		self.namespace = "vixen";
 		
 		// Check API support for newer features and store functions we discover
-		this.fullScreenEnabled = Vixen.unprefix("fullScreenEnabled",document);
-		this.requestFullScreen = Vixen.unprefix("requestFullScreen",document.body);
-		this.cancelFullScreen = Vixen.unprefix("cancelFullScreen",document);
+		self.fullScreenEnabled = Vixen.unprefix("fullScreenEnabled",document);
+		self.requestFullScreen = Vixen.unprefix("requestFullScreen",document.body);
+		self.cancelFullScreen = Vixen.unprefix("cancelFullScreen",document);
+		
+		// Get the volume - if we've saved it!
+		var keyName = self.namespace + "-volume";
+		if (window.localStorage && localStorage.getItem instanceof Function)
+			if (localStorage.getItem(keyName) !== null)
+				self.media.volume = parseFloat(localStorage.getItem(keyName));
 		
 		// Build the UI...
-		this.buildUI();
+		self.buildUI();
 		
 		// Attach UI Events...
-		this.attachEvents();
+		self.attachEvents();
 		
 		// ...and update the UI with information from the media object!
-		this.updateUI();
+		self.updateUI();
 		
 		// A bit of state
-		this.isfullscreen = false;
-		this.playing = false;
-		this.readyState = this.media.readyState;
+		self.isfullscreen = false;
+		self.playing = false;
+		self.readyState = self.media.readyState;
 		
-		return this;
+		return self;
 	}
 	
 	Vixen.prototype.buildUI = function() {
 		var self = this;
 		
 		// Tiny DSL for element creation.
-		var c = self.c = createVixel(this), w = c;
+		var c = self.c = createVixel(self), w = c;
 		
 		// Wrap media element
 		w(self.media,"media");
@@ -69,9 +80,18 @@
 					c("div","volumesliderinner")
 						.a(c("div","volumethumb"))));
 		
+		// Create title header...
+		c("header","header");
+		
+		var mediaTitle = self.media.getAttribute("title");
+		if (mediaTitle && mediaTitle.replace(/\s/ig,"").length) {
+			self.ui.header.a(c("h1","title").t(mediaTitle))
+		}
+		
 		// Bulk of the UI...
 		c("div","container")
 			.r("application")
+			.a(self.ui.header)
 			.a(c("div","mediawrapper"))
 			.a(
 				c("div","toolbar")
@@ -144,7 +164,7 @@
 		
 		// Handle dragging for volume and scrubbing bar
 		self.ui.scrubber.ondrag(function(percentage) {
-			var vertical = this.vertical,
+			var vertical = self.ui.scrubber.vertical,
 				value = vertical ? percentage.y : percentage.x,
 				styleprop = vertical ? "height" : "width";
 			
@@ -158,7 +178,7 @@
 		
 		// And now volume slider. (y) assumes vertical orientation.
 		self.ui.volumeslider.ondrag(function(percentage) {
-			var vertical = this.vertical,
+			var vertical = self.ui.volumeslider.vertical,
 				value = vertical ? percentage.y : percentage.x,
 				styleprop = vertical ? "height" : "width";
 			
@@ -427,53 +447,63 @@
 		if (hours) string = hours + ":";
 		
 		return string + minutes + ":" + seconds;
-		
 	};
 	
 	Vixen.prototype.load = function() {
+		var self = this;
 		
-		this.media.load();
+		self.media.load();
+		return self;
 	};
 	
 	Vixen.prototype.playpause = function() {
+		var self = this;
+		
 		// Play if we're paused
-		if (this.media.paused)
-			return this.play();
+		if (self.media.paused)
+			return self.play();
 		
 		// Or pause if we're playing!
-		return this.pause();
+		return self.pause();
 	};
 	
 	Vixen.prototype.play = function() {
-		this.media.play();
-		this.ui.playpause.t("Pause");
-		this.ui.container.c("playing");
-		this.playing = true;
+		var self = this;
 		
-		return this;
+		self.media.play();
+		self.ui.playpause.t("Pause");
+		self.ui.container.c("playing");
+		self.playing = true;
+		
+		return self;
 	};
 	
 	Vixen.prototype.pause = function() {
-		this.media.pause();
-		this.ui.playpause.t("Play");
-		this.ui.container.c("playing",-1);
-		this.playing = false;
+		var self = this;
 		
-		return this;
+		self.media.pause();
+		self.ui.playpause.t("Play");
+		self.ui.container.c("playing",-1);
+		self.playing = false;
+		
+		return self;
 	};
 	
 	Vixen.prototype.fullscreen = function() {
-		if (!this.isfullscreen) {
-			this.requestFullScreen.call(this.ui.container);
-			this.ui.container.c("fullscreen");
-			this.ui.fullscreen.t("Exit Fullscreen");
-			this.isfullscreen = true;
+		var self = this;
+		if (!self.isfullscreen) {
+			self.requestFullScreen.call(self.ui.container);
+			self.ui.container.c("fullscreen");
+			self.ui.fullscreen.t("Exit Fullscreen");
+			self.isfullscreen = true;
 		} else {
-			this.cancelFullScreen.call(document);
-			this.ui.container.c("fullscreen",-1);
-			this.ui.fullscreen.t("Fullscreen");
-			this.isfullscreen = false;
+			self.cancelFullScreen.call(document);
+			self.ui.container.c("fullscreen",-1);
+			self.ui.fullscreen.t("Fullscreen");
+			self.isfullscreen = false;
 		}
+		
+		return self;
 	};
 	
 	/*
@@ -490,11 +520,12 @@
 	
 	*/
 	Vixen.prototype.jumpTo = function(time) {
+		var self = this;
 		
-		this.media.currentTime = time;
-		this.updateUI();
+		self.media.currentTime = time;
+		self.updateUI();
 		
-		return this;
+		return self;
 	};
 	
 	/*
@@ -513,6 +544,7 @@
 	
 	*/
 	Vixen.prototype.volume = function(volume) {
+		var self = this;
 		if (volume !== null) {
 			
 			if (typeof volume !== "number" || isNaN(volume))
@@ -522,12 +554,15 @@
 				throw new Error("Volume outside of acceptable range.");
 			
 			if (volume === 0)
-				this.ui.mute.t("Unmute");
+				self.ui.mute.t("Unmute");
 			
-			this.media.volume = volume;
-			return this;
+			if (window.localStorage && localStorage.setItem)
+				localStorage.setItem(self.namespace + "-volume",volume);
+			
+			self.media.volume = volume;
+			return self;
 		} else {
-			return this.media.volume;
+			return self.media.volume;
 		}
 	}
 	
@@ -548,6 +583,8 @@
 	
 	*/
 	Vixen.prototype.on = function(eventName,handler) {
+		var self = this;
+		
 		// We must have a valid name...
 		
 		if (!eventName ||
@@ -564,19 +601,19 @@
 		
 		// OK, we got this far.
 		// Create handler object if it doesn't exist...
-		if (!this.eventHandlers || !(this.eventHandlers instanceof Object)) {
-			this.eventHandlers = {};
+		if (!self.eventHandlers || !(self.eventHandlers instanceof Object)) {
+			self.eventHandlers = {};
 		}
 		
-		if (this.eventHandlers[eventName] &&
-			this.eventHandlers[eventName] instanceof Array) {
+		if (self.eventHandlers[eventName] &&
+			self.eventHandlers[eventName] instanceof Array) {
 			
-			this.eventHandlers[eventName].push(handler);
+			self.eventHandlers[eventName].push(handler);
 		} else {
-			this.eventHandlers[eventName] = [handler];
+			self.eventHandlers[eventName] = [handler];
 		}
 		
-		return this;
+		return self;
 	};
 	
 	
@@ -597,14 +634,14 @@
 		var self = this, args = arguments;
 		
 		// If we've lost our handler object, or have no handlers, just return.
-		if (!this.eventHandlers) return;
+		if (!self.eventHandlers) return;
 		
 		// Ensure we've got handlers in the format we expect...
-		if (!this.eventHandlers[eventName] ||
-			!(this.eventHandlers[eventName] instanceof Array)) return;
+		if (!self.eventHandlers[eventName] ||
+			!(self.eventHandlers[eventName] instanceof Array)) return;
 		
 		// OK, so we have handlers for this event.
-		this.eventHandlers[eventName]
+		self.eventHandlers[eventName]
 			// We need these to be functions!
 			.filter(function(handler) {
 				return handler instanceof Function;
@@ -617,7 +654,7 @@
 		
 		
 		
-		return this;
+		return self;
 	};
 	
 	// Static functions
