@@ -32,15 +32,17 @@
 			
 			// Add or remove a class from the element
 			tmp.c = function(classN,remove) {
+				var rep = new RegExp(Vixel.namespace(classN),"ig");
 				if (remove < 0) {
-					var rep = new RegExp(Vixel.namespace(classN),"ig");
 					tmp.className =
 						tmp.className
 							.replace(rep,"")
 							.replace(/\s+/," ")
 							.replace(/\s+$/,"")
 							.replace(/^\s+/,"");
-				} else {
+				
+				// Class shouldn't already exist!
+				} else if (!tmp.className.match(rep)) {
 					tmp.className += tmp.className.length ? " " : "";
 					tmp.className += Vixel.namespace(classN);
 				}

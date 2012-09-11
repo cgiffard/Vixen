@@ -16,6 +16,9 @@
 		this.options = options && options instanceof Object ? options : {};
 		this.ui = {};
 		
+		this.sources =
+			[].slice.call(document.querySelectorAll("source",self.media),0);
+		
 		// For css classes...
 		this.namespace = "vixen";
 		
@@ -45,7 +48,7 @@
 		var self = this;
 		
 		// Tiny DSL for element creation.
-		var c = createVixel(this), w = c;
+		var c = self.c = createVixel(this), w = c;
 		
 		// Wrap media element
 		w(self.media,"media");
@@ -146,7 +149,11 @@
 				styleprop = vertical ? "height" : "width";
 			
 			self.ui.playprogress.s(styleprop,(value*100)+"%");
-			self.jumpTo(value * self.media.duration);
+			
+			// As long as we've got at least the metadata for the media
+			// resource, permit seeking.
+			if (self.media.readyState >= 1)
+				self.jumpTo(value * self.media.duration);
 		});
 		
 		// And now volume slider. (y) assumes vertical orientation.
@@ -195,6 +202,46 @@
 			self.media.on(evt,self.handleMediaEvent);
 		});
 		
+		// Attach error handlers to all the video sources...
+		var sourcesFailed = 0;
+		self.sources.forEach(function(source) {
+			source.addEventListener("error",function(evt) {
+				sourcesFailed ++;
+				
+				if (sourcesFailed === self.sources.length) {
+					// all media failed to display!
+					self.emit("fatalerror");
+					self.ui.container.c("error");
+					
+					var c = self.c;
+					
+					self.ui.container.a(c("div","errormsg"));
+					self.ui.errormsg
+						.a(
+							c("h1","errortitle")
+								.t("Error Loading Video"))
+						.a(
+							c("p","messagebody"));
+					
+					self.ui.messagebody.innerHTML = 
+						"No formats compatible with your browser" +
+						" could be found. Please try downloading one below:";
+					
+					self.ui.errormsg.a(c("ul","downloadlist"));
+					self.sources.forEach(function(source) {
+						var link = c("a");
+						link.setAttribute("href",source.src);
+						link.innerHTML =
+							source.type.split(/\//ig).pop().toUpperCase() +
+							", " + 
+							source.getAttribute("res") + "p";
+						
+						self.ui.downloadlist.a(c("li").a(link));
+					});
+				}
+			});
+		});
+		
 		// Some themes are going to need a bit of help from JS.
 		// Handle window resize...
 		window.addEventListener("resize",function() {
@@ -205,40 +252,48 @@
 	}
 	
 	Vixen.prototype.updateUI = function() {
-		var	self			= this,
-			duration		= self.media.duration || 0,
-			currentTime		= self.media.currentTime,
-			playPercentage	= (currentTime/duration)*100,
-			loadPercentage	= 0,
-			loadedTo		= 0;
+		var	self				= this,
+			duration			= self.media.duration || 0,
+			currentTime			= self.media.currentTime,
+			playPercentage		= (currentTime/duration)*100,
+			loadPercentage		= 0,
+			loadedTo			= 0,
+			range				= 0,
+			timeRemaining		= 0,
+			toolbarUIDimension	= 0,
+			vertical			= self.ui.scrubber.vertical,
+			toolbar				= self.ui.toolbar,
+			spaceAvailable		= 0,
+			toolbarRealEstate	= 
+				(vertical ? toolbar.offsetWidth : toolbar.offsetWidth);
 		
 		if (currentTime > duration || !currentTime) currentTime = 0;
 		
 		// This is a little simplistic, but it works. Get the largest endTime
 		// for buffered time ranges.
-		for (var range = 0; range < self.media.buffered.length; range ++) {
+		for (range = 0; range < self.media.buffered.length; range ++) {
 			if (self.media.buffered.end(range) > loadedTo)
 				loadedTo = self.media.buffered.end(range);
 				loadPercentage = (loadedTo/duration)*100;
 		}
 		
+		// TODO: Update for horizontal/vertical compatibility...
 		if (!self.ui.scrubber.dragging)
 			self.ui.playprogress.s("width",playPercentage+"%");
 		
 		self.ui.loadprogress.s("width",loadPercentage+"%");
 		
 		if (!self.ui.volumeslider.dragging)
-			self.ui.volumesliderinner.s("height",(self.media.volume*100)+"%");
+			self.ui.volumesliderinner.s("height",(self.media.volume*100));
+		
+		// Render time remaining and time elapsed timestamps out to labels...
+		timeRemaining = self.media.duration-self.media.currentTime;
+		self.ui.elapsed.t(self.formatTime(self.media.currentTime));
+		self.ui.remaining.t(self.formatTime(timeRemaining));
 		
 		// Get offset dimension (either width or height, depending on whether
 		// the scrubbing bar is oriented horizontally or vertically) of all
 		// elements in the toolbar that aren't the scrubber itself...
-		var toolbarUIDimension = 0,
-			vertical = self.ui.scrubber.vertical,
-			toolbar = self.ui.toolbar,
-			toolbarRealEstate = 
-				vertical ? toolbar.offsetWidth : toolbar.offsetWidth;
-		
 		[].slice.call(self.ui.toolbar.childNodes).forEach(function(node) {
 			if (node instanceof HTMLElement && node !== self.ui.scrubber) {
 				toolbarUIDimension +=
@@ -246,16 +301,40 @@
 			}
 		});
 		
-		var spaceAvailable = toolbarRealEstate - (toolbarUIDimension*1.1);
+		spaceAvailable = toolbarRealEstate - (toolbarUIDimension*1.1);
 		self.ui.scrubber.s(vertical? "height" : "width",spaceAvailable + "px");
+		
+		// Add classes to the UI base, so the theme can reflect network and
+		// playback state.
+		
+		// Do we have metadata for the video (so we can seek?)
+		self.ui.container.c("seekable", (self.media.readyState >= 1) ? 1 : -1);
+		
+		// Is the video finished?
+		self.ui.container.c("ended", (!!self.media.ended) ? 1 : -1);
+		
+		// What's our network state?
+		self.ui.container.c("netempty", !self.media.networkState ? 1 : -1);
+		self.ui.container.c("netidle", self.media.networkState===1 ? 1 : -1);
+		self.ui.container.c("loading", self.media.networkState===2 ? 1 : -1);
+		self.ui.container.c("nosource", self.media.networkState===3 ? 1 : -1);
+		
+		// Are we playing?
+		if (self.media.paused) {
+			self.ui.playpause.t("Play");
+			self.ui.container.c("playing",-1);
+			self.playing = false;
+		} else {
+			self.ui.playpause.t("Pause");
+			self.ui.container.c("playing");
+			self.playing = true;
+		}
 		
 		self.emit("updateui");
 	};
 	
 	Vixen.prototype.handleMediaEvent = function(eventData) {
 		var self = this;
-		
-		self.updateUI();
 		
 		/* 
 		
@@ -293,12 +372,26 @@
 				break;
 			
 			case "error":
-			
+				
 				break;
 				
 			case "ended":
 				
 				break;
+				
+			case "volumechange":
+				
+				break;
+			
+			case "loadeddata":
+			case "loadedmetadata":
+			case "loadstart":
+			case "suspend":
+			case "stalled":
+			case "waiting":
+				
+				break;
+			
 			
 		}
 		
@@ -316,7 +409,25 @@
 		// seeking
 		// startTime
 		
+		self.updateUI();
 		self.emit(eventData.type);
+	};
+	
+	Vixen.prototype.formatTime = function(timestamp) {
+		var seconds = (timestamp % 60) | 0,
+			minutes	= ((timestamp / 60) % 60) | 0,
+			hours	= (timestamp / (60*60)) | 0,
+			string	= "";
+		
+		// Pad if required...
+		if (hours && hours < 10) hours = "0" + String(hours);
+		if (minutes < 10) minutes = "0" + String(minutes);
+		if (seconds < 10) seconds = "0" + String(seconds);
+		
+		if (hours) string = hours + ":";
+		
+		return string + minutes + ":" + seconds;
+		
 	};
 	
 	Vixen.prototype.load = function() {
