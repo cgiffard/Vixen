@@ -70,6 +70,12 @@
 				return element;	
 			};
 			
+			// Try and replicate the accessibility features of a native control
+			element.ctrl = function(ariaRole,tabIndex) {
+				element.setAttribute("tabIndex",tabIndex);
+				return element.r(ariaRole);
+			};
+			
 			// Little helper for implementing draggable functionality
 			element.ondrag = function(handler) {
 				element.addEventListener("mousedown",function(evt) {

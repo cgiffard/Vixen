@@ -21,8 +21,26 @@ document:true, module:true, createVixel:true, window:true, localStorage:true */
 		self.options = options && options instanceof Object ? options : {};
 		self.ui = {};
 		
+		// Get the sources for the video...
 		self.sources =
 			[].slice.call(document.querySelectorAll("source",self.media),0);
+		
+		// Get the sources we can deal with.
+		self.compatibleSources = self.sources.filter(function(source) {
+			return self.media.canPlayType(source.type).length;
+		});
+		
+		// Order and store indexed by resolution
+		self.sourcesByResolution = {};
+		self.compatibleSources.forEach(function(source) {
+			var sourceLineHeight = source.getAttribute("res");
+			if (sourceLineHeight && !isNaN(sourceLineHeight)) {
+				sourceLineHeight = parseInt(sourceLineHeight,10);
+				
+				if (!self.sourcesByResolution[sourceLineHeight])
+					self.sourcesByResolution[sourceLineHeight] = source;
+			}
+		});
 		
 		// For css classes...
 		self.namespace = "vixen";
@@ -74,8 +92,8 @@ document:true, module:true, createVixel:true, window:true, localStorage:true */
 		
 		// Create volume control...
 		c("div","volumegroup")
-			.a(c("button","mute").t("Mute"))
-			.a(c("div","volumeslider")
+			.a(c("button","mute").t("Mute").ctrl("button",1))
+			.a(c("div","volumeslider").ctrl("slider",4)
 				.a(
 					c("div","volumesliderinner")
 						.a(c("div","volumethumb"))));
@@ -96,9 +114,9 @@ document:true, module:true, createVixel:true, window:true, localStorage:true */
 			.a(
 				c("div","toolbar")
 					.r("toolbar")
-					.a(c("button","playpause").t("Play"))
+					.a(c("button","playpause").t("Play").ctrl("button",1))
 					.a(c("label","elapsed"))
-					.a(self.ui.scrubber)
+					.a(self.ui.scrubber.ctrl("slider",2))
 					.a(c("label","remaining"))
 					.a(self.ui.volumegroup));
 		
