@@ -92,7 +92,7 @@ document:true, module:true, createVixel:true, window:true, localStorage:true */
 		
 		// Create volume control...
 		c("div","volumegroup")
-			.a(c("button","mute").t("Mute").ctrl("button",1))
+			.a(c("button","mute").t("Mute").ctrl("button",3))
 			.a(c("div","volumeslider").ctrl("slider",4)
 				.a(
 					c("div","volumesliderinner")
@@ -104,6 +104,29 @@ document:true, module:true, createVixel:true, window:true, localStorage:true */
 		var mediaTitle = self.media.getAttribute("title");
 		if (mediaTitle && mediaTitle.replace(/\s/ig,"").length) {
 			self.ui.header.a(c("h1","title").t(mediaTitle))
+		}
+		
+		// Auxilliary tools...
+		self.ui.header.a(
+			c("div","auxtools")
+				.r("toolbar"));
+		
+		// Video resolution switcher...
+		// TODO: Fold this kind of code into a single DSL func for generating
+		// select-type widgets
+		if (self.compatibleSources.length > 1) {
+			self.ui.auxtools.a(
+				c("div","dropdownwrapper").a(
+					c("label").t("Video Resolution")).a(
+					c("select","resselector")));
+			
+			for (var resolution in self.sourcesByResolution) {
+				var option = c("option");
+					option.value = resolution;
+					option.innerHTML = resolution + (resolution >= 720 ? "HD":"");
+				
+				self.ui.resselector.a(option);
+			}
 		}
 		
 		// Bulk of the UI...

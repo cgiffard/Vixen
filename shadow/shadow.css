@@ -233,6 +233,11 @@
 	background-image: linear-gradient(top, rgb(39, 39, 39), rgb(67, 66, 66));
 }
 
+.vixen-scrubber:focus, .vixen-volumeslider:focus {
+	-webkit-box-shadow: white 0px 0px 5px 2px;
+	outline: none;
+}
+
 .vixen-playprogress {
 	height: 100%;
 	min-width: 10px;
@@ -407,6 +412,7 @@
 	margin-top: -2px;
 }
 
+.vixen-volumeslider:focus,
 .vixen-mute:focus + .vixen-volumeslider,
 .vixen-mute:active + .vixen-volumeslider {
 	visibility: visible;
