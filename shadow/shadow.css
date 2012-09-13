@@ -84,9 +84,11 @@
 }
 
 .vixen-video .vixen-header h1 {
+	float: left;
 	color: white;
 	font-size: 13pt;
 	text-shadow: black 0px 0px 5px;
+	width: 55%;
 }
 
 .vixen-playing .vixen-header {
@@ -178,7 +180,7 @@
 }
 
 .vixen-toolbar button:focus {
-	outline: none;
+	outline: solid white 1px;
 
 	background-image: -webkit-gradient(radial, 50% 50%,0,50% 50%,200, from(rgba(0, 0, 0, 0.00)), to(rgba(0, 0, 0, 0.50)));
 	background-image: -webkit-radial-gradient(50% 50%, rgba(0, 0, 0, 0.50), rgba(0, 0, 0, 0.00));
@@ -346,6 +348,7 @@
 						rgba(0,0,0,0.36) 0px 2px 2px;
 	box-shadow:			inset rgba(255,255,255,0.4) 1px 1px 0px,
 						rgba(0,0,0,0.36) 0px 2px 2px;
+	
 }
 
 
@@ -457,4 +460,117 @@
 .vixen-error .vixen-toolbar > * {
 	opacity: 0.3;
 	pointer-events: none;
+}
+
+.vixen-auxtools {
+	float: right;
+	font-size: 75%;
+	color: white;
+	width: 40%;
+	min-width: 170px;
+}
+
+.vixen-auxtools * {
+	color: white;
+}
+
+.vixen-dropdownwrapper {
+	position: relative;
+	
+	margin: 4px;
+	margin-top: 0px;
+	padding: 0px 5px;
+	line-height: 28px;
+	height: 30px;
+	width: 100%;
+	
+	background-color: rgba(0,0,0,0.8);
+	border: solid #333 1px;
+	border-top-color: #444;
+	border-bottom-color: #2A2A2A;
+	
+	-webkit-border-radius: 4px;
+	-moz-border-radius: 4px;
+	-o-border-radius: 4px;
+	border-radius: 4px;
+	
+	-webkit-box-shadow: rgba(0,0,0,0.36) 0px 2px 2px;
+	-moz-box-shadow:	rgba(0,0,0,0.36) 0px 2px 2px;
+	-o-box-shadow:		rgba(0,0,0,0.36) 0px 2px 2px;
+	box-shadow:			rgba(0,0,0,0.36) 0px 2px 2px;
+}
+
+.vixen-dropdownwrapper:hover {
+	border-color: white;
+	-webkit-box-shadow: rgba(255,255,255,0.56) 0px 0px 10px;
+	-moz-box-shadow:	rgba(255,255,255,0.56) 0px 0px 10px;
+	-o-box-shadow:		rgba(255,255,255,0.56) 0px 0px 10px;
+	box-shadow:			rgba(255,255,255,0.56) 0px 0px 10px;
+}
+
+.vixen-dropdownwrapper label {
+	display: block;
+	min-width: 150px;
+}
+
+.vixen-dropdownwrapper label:before {
+	font-family: SSStandard;
+	content: "\25CE";
+	line-height: 31px;
+	float: left;
+	width: 25px;
+	text-align: center;
+	color: #AAA;
+}
+
+.vixen-dropdownwrapper label:after {
+	float: right;
+	width: 20px;
+	height: 28px;
+	margin-right: -5px;
+	
+	font-family: Helvetica, Arial, sans-serif;
+	font-size: 8pt;
+	text-align: center;
+	line-height: 30px;
+	
+	content: "\25bc";
+	
+	color: #444;
+	background-color: #1A1A1A;
+	border-left: solid #333 1px;
+	
+	-webkit-border-top-right-radius: 3px;
+	-moz-border-radius-topright: 3px;
+	-o-border-top-right-radius: 3px;
+	border-top-right-radius: 3px;
+	
+	-webkit-border-bottom-right-radius: 3px;
+	-moz-border-radius-bottomright: 3px;
+	-o-border-bottom-right-radius: 3px;
+	border-bottom-right-radius: 3px;
+}
+
+.vixen-dropdownwrapper:hover label:after {
+	color: #999;
+	border-left: solid #777 1px;
+}
+
+.vixen-dropdownwrapper select {
+	display: block;
+	position: absolute;
+	width: 100%;
+	height: 100%;
+	top: 0px;
+	left: 0px;
+	opacity: 0;
+	color: black;
+}
+
+.vixen-dropdownwrapper:hover {
+	border-color: white;
+	-webkit-box-shadow: rgba(255,255,255,0.56) 0px 0px 10px;
+	-moz-box-shadow:	rgba(255,255,255,0.56) 0px 0px 10px;
+	-o-box-shadow:		rgba(255,255,255,0.56) 0px 0px 10px;
+	box-shadow:			rgba(255,255,255,0.56) 0px 0px 10px;
 }

@@ -66,9 +66,10 @@ document:true, module:true, createVixel:true, window:true, localStorage:true */
 		self.updateUI();
 		
 		// A bit of state
-		self.isfullscreen = false;
-		self.playing = false;
-		self.readyState = self.media.readyState;
+		self.isfullscreen	= false;
+		self.playing		= false;
+		self.readyState		= self.media.readyState;
+		self.jumpTo			= 0;
 		
 		return self;
 	}
@@ -115,15 +116,23 @@ document:true, module:true, createVixel:true, window:true, localStorage:true */
 		// TODO: Fold this kind of code into a single DSL func for generating
 		// select-type widgets
 		if (self.compatibleSources.length > 1) {
+			var label = c("label").t("Video Resolution");
 			self.ui.auxtools.a(
-				c("div","dropdownwrapper").a(
-					c("label").t("Video Resolution")).a(
-					c("select","resselector")));
+				c("div","dropdownwrapper")
+					.a(label)
+					.a(c("select","resselector")));
+					
+			// Add label relationship
+			var id = "rs-" + String(Math.random()).replace(/\D/,"");
+			self.ui.resselector.id = id;
+			label.setAttribute("for",id);
 			
 			for (var resolution in self.sourcesByResolution) {
 				var option = c("option");
 					option.value = resolution;
-					option.innerHTML = resolution + (resolution >= 720 ? "HD":"");
+					option.source = self.sourcesByResolution[resolution];
+					option.innerHTML = resolution + "p" +
+							(resolution >= 720 ? " HD" : "");
 				
 				self.ui.resselector.a(option);
 			}
@@ -233,6 +242,18 @@ document:true, module:true, createVixel:true, window:true, localStorage:true */
 			evt.preventDefault();
 		});
 		
+		// Enable resolution selection...
+		if (self.ui.resselector) {
+			self.ui.resselector.on("change",function() {
+				var options = self.ui.resselector.querySelectorAll("option"),
+					option = options[self.ui.resselector.selectedIndex],
+					prevCurrentTime = self.media.currentTime;
+				
+				self.media.src = option.source.src;
+				self.media.currentTime = prevCurrentTime;
+			});
+		}
+		
 		// media events to listen to
 		[
 			"abort",
@@ -262,6 +283,24 @@ document:true, module:true, createVixel:true, window:true, localStorage:true */
 			// Just throw them all out to the catchall...
 			self.media.on(evt,self.handleMediaEvent);
 		});
+		
+		// Window and document events to intercept...
+		// Some themes are going to need a bit of help from JS.
+		// Handle window resize...
+		window.addEventListener("resize",function() {
+			self.updateUI();
+		},"false");
+		
+		// And document events
+		[
+			// Get the unprefixed event for
+			Vixen.unprefix("fullscreenchange",document)
+			].forEach(function(evt) {
+			
+			document.addEventListener(evt,function(evt) {
+				self.updateUI();
+			});
+		})
 		
 		// Attach error handlers to all the video sources...
 		var sourcesFailed = 0;
@@ -302,12 +341,6 @@ document:true, module:true, createVixel:true, window:true, localStorage:true */
 				}
 			});
 		});
-		
-		// Some themes are going to need a bit of help from JS.
-		// Handle window resize...
-		window.addEventListener("resize",function() {
-			self.updateUI();
-		},"false");
 		
 		return self;
 	}
@@ -362,7 +395,7 @@ document:true, module:true, createVixel:true, window:true, localStorage:true */
 			}
 		});
 		
-		spaceAvailable = toolbarRealEstate - (toolbarUIDimension*1.1);
+		spaceAvailable = toolbarRealEstate - (toolbarUIDimension*1.05);
 		self.ui.scrubber.s(vertical? "height" : "width",spaceAvailable + "px");
 		
 		// Add classes to the UI base, so the theme can reflect network and
@@ -389,6 +422,20 @@ document:true, module:true, createVixel:true, window:true, localStorage:true */
 			self.ui.playpause.t("Pause");
 			self.ui.container.c("playing");
 			self.playing = true;
+		}
+		
+		// Are we still fullscreen? Is there a mismatch between what the
+		// browser thinks and what we think? Correct it!
+		if (Vixen.unprefix("isfullscreen",document) !== self.isfullscreen) {
+			if (Vixen.unprefix("isfullscreen",document)) {
+				self.ui.container.c("fullscreen");
+				self.ui.fullscreen.t("Exit Fullscreen");
+				self.isfullscreen = true;
+			} else {
+				self.ui.container.c("fullscreen",-1);
+				self.ui.fullscreen.t("Fullscreen");
+				self.isfullscreen = false;
+			}
 		}
 		
 		self.emit("updateui");
@@ -425,7 +472,6 @@ document:true, module:true, createVixel:true, window:true, localStorage:true */
 		"volumechange",
 		"waiting" 
 		*/
-		
 		
 		switch (eventData.type) {
 			case "click":
@@ -811,7 +857,12 @@ document:true, module:true, createVixel:true, window:true, localStorage:true */
 		// No hasOwnProperty here!
 		for (var fName in lookIn) {
 			if (search.exec(fName)) {
-				return lookIn[fName];
+				if (lookIn[fName] !== null && !fName.match(/^on/))
+					return lookIn[fName];
+				
+				// Ok, it was null && matched '^on' - probably an event.
+				// Remove leading 'on' if present and return name.
+				return fName.replace(/^on/,"");
 			}
 		}
 		
