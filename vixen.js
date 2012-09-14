@@ -66,10 +66,10 @@ document:true, module:true, createVixel:true, window:true, localStorage:true */
 		self.updateUI();
 		
 		// A bit of state
-		self.isfullscreen	= false;
-		self.playing		= false;
-		self.readyState		= self.media.readyState;
-		self.jumpTo			= 0;
+		self.isfullscreen		= false;
+		self.playing			= false;
+		self.readyState			= self.media.readyState;
+		self.resumePlayingAt	= 0;
 		
 		return self;
 	}
@@ -159,7 +159,7 @@ document:true, module:true, createVixel:true, window:true, localStorage:true */
 			
 			// Append a fullscreen button
 			self.ui.toolbar.a(
-				c("button","fullscreen")
+				c("button","fullscreenbutton")
 					.t("Fullscreen"));
 		}
 		
@@ -208,8 +208,8 @@ document:true, module:true, createVixel:true, window:true, localStorage:true */
 			}
 		});
 		
-		if (self.ui.fullscreen) {
-			self.ui.fullscreen.on("click",self.fullscreen);
+		if (self.ui.fullscreenbutton) {
+			self.ui.fullscreenbutton.on("click",self.fullscreen);
 		}
 		
 		// Handle dragging for volume and scrubbing bar
@@ -429,11 +429,11 @@ document:true, module:true, createVixel:true, window:true, localStorage:true */
 		if (Vixen.unprefix("isfullscreen",document) !== self.isfullscreen) {
 			if (Vixen.unprefix("isfullscreen",document)) {
 				self.ui.container.c("fullscreen");
-				self.ui.fullscreen.t("Exit Fullscreen");
+				self.ui.fullscreenbutton.t("Exit Fullscreen");
 				self.isfullscreen = true;
 			} else {
 				self.ui.container.c("fullscreen",-1);
-				self.ui.fullscreen.t("Fullscreen");
+				self.ui.fullscreenbutton.t("Fullscreen");
 				self.isfullscreen = false;
 			}
 		}
@@ -581,12 +581,12 @@ document:true, module:true, createVixel:true, window:true, localStorage:true */
 		if (!self.isfullscreen) {
 			self.requestFullScreen.call(self.ui.container);
 			self.ui.container.c("fullscreen");
-			self.ui.fullscreen.t("Exit Fullscreen");
+			self.ui.fullscreenbutton.t("Exit Fullscreen");
 			self.isfullscreen = true;
 		} else {
 			self.cancelFullScreen.call(document);
 			self.ui.container.c("fullscreen",-1);
-			self.ui.fullscreen.t("Fullscreen");
+			self.ui.fullscreenbutton.t("Fullscreen");
 			self.isfullscreen = false;
 		}
 		

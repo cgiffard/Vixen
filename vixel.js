@@ -7,7 +7,7 @@
 		
 		if (!self.ui) self.ui = {};
 		
-		var Vixel = function(kind,place) {
+		var Vixel = c = function(kind,place) {
 			var element;
 			
 			// Make a new element, or just add convenience functions
@@ -85,11 +85,18 @@
 					var width = element.offsetWidth,
 						height = element.offsetHeight,
 						on = window.addEventListener,
-						offsetLeft = element.offsetLeft,
-						offsetTop = element.offsetTop,
+						offsetLeft = 0,
+						offsetTop = 0,
 						pointerNode = element;
 					
 					element.dragging = true;
+					
+					if (pointerNode.offsetParent) {
+						do {
+							offsetLeft += pointerNode.offsetLeft;
+							offsetTop += pointerNode.offsetTop;
+						} while (pointerNode = pointerNode.offsetParent);
+					}
 					
 					function eventHandler(evt) {
 						if (evt.preventDefault) evt.preventDefault();
@@ -144,6 +151,68 @@
 			return self.namespace + "-" + stringInput;
 		};
 		
+		// Function for generating selector elements!
+		// Helpful since it's a more complicated function that would otherwise
+		// clutter vixen-core.
+		Vixel.createSelector = function(labelText,className,self) {
+			var label		= document.createElement("label"),
+				wrapper		= document.createElement("div"),
+				selector	= document.createElement("select"),
+				idSeed		= String(Math.random()).replace(/\D/,""),
+				id 			= Vixen.namespace("rs-" + idSeed);
+			
+			label.className = Vixel.namespace("selectorlabel");
+			wrapper.className = Vixel.namespace("dropdownwrapper");
+			
+			if (className) {
+				selector.className = Vixel.namespace(className);
+				self.ui[className] = selector;
+			}
+			
+			// Add a label if available
+			if (labelText)
+				c(label).t(labelText);
+			
+			// Build rest of UI
+			c(wrapper)
+				.a(label)
+				.a(selector);
+			
+			// Add label relationship
+			selector.id = id;
+			label.setAttribute("for",id);
+			
+			// Focus styling for accessibility
+			// (we give the wrapper a class based on whether the control is
+			// focussed - this gives us more flexibility when styling.)
+			c(selector).on("focus",function() {
+				wrapper.c("focus");
+			});
+			
+			c(selector).on("blur",function() {
+				wrapper.c("focus",-1);
+			});
+			
+			// Add nice little methods for adding to list
+			wrapper.addItem = function(text,value,onselect) {
+				var option = c("option");
+					option.value = value;
+					option.innerHTML = text;
+					option.funcSelect = funcSelect;
+			};
+			
+			for (var resolution in self.sourcesByResolution) {
+				var option = c("option");
+					option.value = resolution;
+					option.source = self.sourcesByResolution[resolution];
+					option.innerHTML = resolution + "p" +
+							(resolution >= 720 ? " HD" : "");
+				
+				self.ui.resselector.a(option);
+			}
+		};
+		
 		return Vixel;
 	};
+	
 })(this);

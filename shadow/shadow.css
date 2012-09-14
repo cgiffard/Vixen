@@ -1,28 +1,23 @@
 @font-face {
-  font-family: "SSStandard";
-  src: url('./ss-standard.eot');
-  src: url('./ss-standard.eot?#iefix') format('embedded-opentype'), 
-	   url('./ss-standard.woff') format('woff'), 
-	   url('./ss-standard.ttf')  format('truetype'),
-	   url('./ss-standard.svg#SSStandard') format('svg');
-  font-weight: normal;
-  font-style: normal;
+	font-family: 'ShadowIcons';
+	src:url('./ShadowIcons.eot');
+	src:url('./ShadowIcons.eot?#iefix') format('embedded-opentype'),
+		url('./ShadowIcons.svg#ShadowIcons') format('svg'),
+		url('./ShadowIcons.woff') format('woff'),
+		url('./ShadowIcons.ttf') format('truetype');
+	font-weight: normal;
+	font-style: normal;
 }
 
 .vixen-video button:after,
 .vixen-video button:before {
-	font-family: "SSStandard";
+	font-family: "ShadowIcons";
 	font-style: normal;
 	font-weight: normal;
 	text-decoration: none;
 	text-rendering: optimizeLegibility;
 	white-space: nowrap;
-	-webkit-font-feature-settings: "liga";
-	-moz-font-feature-settings: "liga=1";
-	-moz-font-feature-settings: "liga";
-	-ms-font-feature-settings: "liga" 1;
-	-o-font-feature-settings: "liga";
-	font-feature-settings: "liga";
+	speak: none;
 	-webkit-font-smoothing: antialiased;
 }
 
@@ -177,6 +172,8 @@
 	content: "\25CE";
 	color: rgb(174,174,174);
 	pointer-events: none;
+	
+	font-size: 11pt;
 }
 
 .vixen-toolbar button:focus {
@@ -198,15 +195,19 @@
 }
 
 .vixen-toolbar .vixen-playpause:before {
-	content: "\25B6";
+	content: "\e000";
 }
 
 .vixen-playing .vixen-toolbar .vixen-playpause:before {
-	content: "\E8A0";
+	content: "\e001";
 }
 
-.vixen-toolbar .vixen-fullscreen:before {
-	content: "\2922";
+.vixen-toolbar .vixen-fullscreenbutton:before {
+	content: "\e002";
+}
+
+.vixen-fullscreen .vixen-fullscreenbutton:before {
+	content: "\e003";
 }
 
 .vixen-scrubber {
@@ -353,7 +354,11 @@
 
 
 .vixen-toolbar .vixen-mute:before {
-	content: "volumehigh";
+	content: "\e005";
+}
+
+.vixen-muted .vixen-mute:before {
+	content: "\e004";
 }
 
 .vixen-volumegroup {
@@ -514,9 +519,9 @@
 }
 
 .vixen-dropdownwrapper label:before {
-	font-family: SSStandard;
+	font-family: ShadowIcons;
 	content: "\25CE";
-	line-height: 31px;
+	line-height: 27px;
 	float: left;
 	width: 25px;
 	text-align: center;
