@@ -155,27 +155,31 @@
 		// Helpful since it's a more complicated function that would otherwise
 		// clutter vixen-core.
 		Vixel.createSelector = function(labelText,className,self) {
-			var label		= document.createElement("label"),
-				wrapper		= document.createElement("div"),
-				selector	= document.createElement("select"),
+			var label		= c("label"),
+				valueSpan	= c("span"),
+				wrapper		= c("div"),
+				selector	= c("select"),
 				idSeed		= String(Math.random()).replace(/\D/,""),
-				id 			= Vixen.namespace("rs-" + idSeed);
+				id 			= Vixel.namespace("rs-" + idSeed)
+				handler		= function(){},
+				optionCount	= 0;
 			
-			label.className = Vixel.namespace("selectorlabel");
-			wrapper.className = Vixel.namespace("dropdownwrapper");
+			label.c("selectorlabel");
+			wrapper.c("dropdownwrapper");
+			valueSpan.c("currentselectorvalue");
 			
 			if (className) {
-				selector.className = Vixel.namespace(className);
-				self.ui[className] = selector;
+				wrapper.c(className);
+				self.ui[className] = wrapper;
 			}
 			
 			// Add a label if available
 			if (labelText)
-				c(label).t(labelText);
+				label.t(labelText);
 			
 			// Build rest of UI
-			c(wrapper)
-				.a(label)
+			wrapper
+				.a(label.a(valueSpan))
 				.a(selector);
 			
 			// Add label relationship
@@ -194,22 +198,42 @@
 			});
 			
 			// Add nice little methods for adding to list
-			wrapper.addItem = function(text,value,onselect) {
+			wrapper.addItem = function(text,value,funcSelect) {
 				var option = c("option");
 					option.value = value;
 					option.innerHTML = text;
 					option.funcSelect = funcSelect;
+				
+				if (optionCount === 0) {
+					valueSpan.innerHTML = "&nbsp" + text;
+				}
+				
+				optionCount ++;
+				selector.a(option);
 			};
 			
-			for (var resolution in self.sourcesByResolution) {
-				var option = c("option");
-					option.value = resolution;
-					option.source = self.sourcesByResolution[resolution];
-					option.innerHTML = resolution + "p" +
-							(resolution >= 720 ? " HD" : "");
+			// And for doing something when the value changes...
+			wrapper.onChange = function(newHandler) {
+				if (newHandler instanceof Function)
+					handler = newHandler;
+			};
+			
+			wrapper.on("change", function() {
+				var index = selector.selectedIndex,
+					optionList =
+						[].slice.call(wrapper.querySelectorAll("option"),0),
+					currentOption = optionList[index];
 				
-				self.ui.resselector.a(option);
-			}
+				valueSpan.innerHTML = "&nbsp" + currentOption.innerHTML;
+				
+				if (currentOption.funcSelect instanceof Function) {
+					currentOption.funcSelect.call(currentOption);
+				}
+				
+				handler(currentOption);
+			})
+			
+			return wrapper;
 		};
 		
 		return Vixel;

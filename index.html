@@ -5,6 +5,10 @@
 		
 		<title>Vixen Test</title>
 		<link href="shadow/shadow.css" rel="stylesheet" type="text/css" />
+		
+		<meta name="HandheldFriendly" content="True">
+		<meta name="MobileOptimized" content="320">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 	</head>
 	<body>
 		<video id="thing" height="180" width="320" controls title="Quite &amp; Orange - cdak 4K Demo">
@@ -24,12 +28,22 @@
 			
 			<!-- Theora -->
 			<source src="video/quite_orange-cdak-240p.theora.ogv" type="video/ogv" res="240"/>
+			
+			<track kind="captions" label="English captions" srclang="en" src="./vtt" />
+			<track kind="captions" label="kdfjnsdkfjhsdkjhsdkf ksjdhf sjdhfkd sdkjhsdk jsdfh" srclang="ja" src="./vtt" />
+			
+			<track kind="chapters" label="Chapters" srclang="en" src="video/chapters.vtt" />
 		</video>
 		<!-- Vixel DSL -->
 		<script src="vixel.js"></script>
 		<!-- Vixen Media Framework -->
 		<script src="vixen.js"></script>
 		<!-- Initialise Vixen! -->
-		<script>var video = Vixen.ify(document.querySelector("video"));</script>
+		<script>
+			var video;
+			window.addEventListener("load",function() {
+				video = Vixen.ify(document.querySelector("video"));
+			});
+		</script>
 	</body>
 </html>

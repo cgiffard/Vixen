@@ -50,6 +50,10 @@ document:true, module:true, createVixel:true, window:true, localStorage:true */
 		self.requestFullScreen = Vixen.unprefix("requestFullScreen",document.body);
 		self.cancelFullScreen = Vixen.unprefix("cancelFullScreen",document);
 		
+		// TODO
+		if (self.requestFullScreen) self.requestFullScreen = self.requestFullScreen.bind(document.body);
+		if (self.cancelFullScreen) self.requestFullScreen.bind(document);
+		
 		// Get the volume - if we've saved it!
 		var keyName = self.namespace + "-volume";
 		if (window.localStorage && localStorage.getItem instanceof Function)
@@ -113,33 +117,145 @@ document:true, module:true, createVixel:true, window:true, localStorage:true */
 				.r("toolbar"));
 		
 		// Video resolution switcher...
-		// TODO: Fold this kind of code into a single DSL func for generating
-		// select-type widgets
 		if (self.compatibleSources.length > 1) {
-			var label = c("label").t("Video Resolution");
-			self.ui.auxtools.a(
-				c("div","dropdownwrapper")
-					.a(label)
-					.a(c("select","resselector")));
-					
-			// Add label relationship
-			var id = "rs-" + String(Math.random()).replace(/\D/,"");
-			self.ui.resselector.id = id;
-			label.setAttribute("for",id);
+			var resDropdown =
+				c.createSelector("Video Resolution","resselector",self);
+				self.ui.auxtools.a(resDropdown);
 			
 			for (var resolution in self.sourcesByResolution) {
-				var option = c("option");
-					option.value = resolution;
-					option.source = self.sourcesByResolution[resolution];
-					option.innerHTML = resolution + "p" +
-							(resolution >= 720 ? " HD" : "");
+				var source = self.sourcesByResolution[resolution],
+					resolutionText = resolution + "p" +
+									(resolution >= 720 ? " HD" : " SD");
 				
-				self.ui.resselector.a(option);
+				resDropdown.addItem(resolutionText, resolution, function() {
+					var prevCurrentTime = self.media.currentTime;
+					self.media.src = source.src;
+					self.media.resumePlayingAt = prevCurrentTime;
+				});
 			}
 		}
 		
+		// Text Tracks...
+		if (self.media.textTracks && self.media.textTracks.length) {
+			
+			// Get text tracks, and sort them into various buckets depending on
+			// type.
+			
+			var trackArray		= [].slice.call(self.media.textTracks,0),
+				captionArray	=	trackArray.filter(function(track) {
+										return	track.kind === "subtitles" ||
+												track.kind === "captions";
+									}),
+				chaptersArray	=	trackArray.filter(function(track) {
+										return	track.kind === "chapters";
+									}),
+				metadataArray	=	trackArray.filter(function(track) {
+										return	track.kind === "metadata";
+									});
+			
+			// Create the captions/subtitle selector
+			
+			if (captionArray.length) {
+				var captionList =
+					c.createSelector("Captions","captionsselector",self);
+					self.ui.auxtools.a(captionList);
+				
+				captionList.addItem("Captions off","");
+				
+				captionArray.forEach(function(track, index) {
+					captionList.addItem(
+						"[" + (track.language||"unknown") + "] " + track.label,
+						null,
+						function() {
+							// Switch off all other tracks...
+							captionArray.forEach(function(loopTrack) {
+								loopTrack.mode = 0;
+							});
+							
+							// Switch on our track
+							track.mode = 2;
+						});
+					
+					if (track.mode === 2) {
+						captionList.selectedIndex = index;
+					}
+				});
+			}
+			
+			if (chaptersArray.length) {
+				var chapterList =
+					c.createSelector("Chapters","chapterselector",self);
+				
+				// Define function to be called when all the chapter tracks
+				// have loaded
+				var buildChapterList = function() {
+					// Put all the cues into a single array, which we can
+					// then sort in order of startTime.
+					var cueArr = [];
+					
+					chaptersArray.forEach(function(track) {
+						cueArr = cueArr.concat([].slice.call(track.cues,0));
+					});
+					
+					// Sort...
+					cueArr = cueArr.sort(function(a,b) {
+						return a.startTime - b.startTime;
+					});
+					
+					cueArr.forEach(function(cue) {
+						chapterList.addItem(cue.text)
+					});
+					
+					self.ui.auxtools.a(chapterList);
+				}
+				
+				var chaptersLoaded = 0;
+				
+				chaptersArray.forEach(function(chapter) {
+					chapter.mode = 1; // Hidden, but triggers download...
+					
+					// WHY DO TRACKS NOT HAVE A BLEEDIN' LOAD EVENT!?
+					// What is this, seriously!?
+					var trackLoadAttemptCount = 0;
+					setTimeout(function waitForLoad() {
+						if (chapter.cues) {
+							chaptersLoaded ++;
+							
+							if (chaptersLoaded === chaptersArray.length) {
+								buildChapterList();
+							}
+							
+						} else {
+							
+							// Maybe they didn't get the message.
+							// (webkit bug. Ugh)
+							chapter.mode = 1;
+							
+							// Try again, every 100msec, for ten seconds.
+							// Then give up.
+							if (trackLoadAttemptCount < 100) {
+								
+								trackLoadAttemptCount ++;
+								setTimeout(waitForLoad,100);
+							}
+						}
+					},100);
+				});
+			}
+		}
+		
+		
+		
+		
+		//
+		//var audioTrackList = c.createSelector("Audio Tracks","audiotrackselector",self);
+		//self.ui.auxtools.a(audioTrackList);
+		//
+		//var videoTrackList = c.createSelector("Video Tracks","videotrackselector",self);
+		//self.ui.auxtools.a(videoTrackList);
+		
 		// Bulk of the UI...
-		c("div","container")
+		c("div","container").c("wump")
 			.r("application")
 			.a(self.ui.header)
 			.a(c("div","mediawrapper"))
@@ -242,17 +358,14 @@ document:true, module:true, createVixel:true, window:true, localStorage:true */
 			evt.preventDefault();
 		});
 		
-		// Enable resolution selection...
-		if (self.ui.resselector) {
-			self.ui.resselector.on("change",function() {
-				var options = self.ui.resselector.querySelectorAll("option"),
-					option = options[self.ui.resselector.selectedIndex],
-					prevCurrentTime = self.media.currentTime;
-				
-				self.media.src = option.source.src;
-				self.media.currentTime = prevCurrentTime;
-			});
-		}
+		// If the user clicks the header in an area which is really just
+		// a transparent window through to the video, just run what the video
+		// would if it were clicked directly!
+		self.ui.header.on("mousedown",function(evt) {
+			if (evt.target === self.ui.header ||
+				evt.target === self.ui.title)
+				self.playpause();
+		});
 		
 		// media events to listen to
 		[
@@ -300,7 +413,7 @@ document:true, module:true, createVixel:true, window:true, localStorage:true */
 			document.addEventListener(evt,function(evt) {
 				self.updateUI();
 			});
-		})
+		});
 		
 		// Attach error handlers to all the video sources...
 		var sourcesFailed = 0;
@@ -426,7 +539,9 @@ document:true, module:true, createVixel:true, window:true, localStorage:true */
 		
 		// Are we still fullscreen? Is there a mismatch between what the
 		// browser thinks and what we think? Correct it!
-		if (Vixen.unprefix("isfullscreen",document) !== self.isfullscreen) {
+		if (Vixen.unprefix("isfullscreen",document) !== self.isfullscreen &&
+			self.ui.fullscreenbutton) {
+			
 			if (Vixen.unprefix("isfullscreen",document)) {
 				self.ui.container.c("fullscreen");
 				self.ui.fullscreenbutton.t("Exit Fullscreen");

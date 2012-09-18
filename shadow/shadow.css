@@ -38,13 +38,14 @@
 
 .vixen-container {
 	position: relative;
+	overflow: hidden;
 	background-color: black;
 	min-width: 300px;
 	min-height: 30px;
 	font-family: "Helvetica Neue", Arial, Helvetica, sans-serif;
 }
 
-.vixen-container.vixen-fullscreen {
+.vixen-container.vixden-fullscreen {
 	position: absolute;
 	top: 0px;
 	width: 0px;
@@ -80,6 +81,7 @@
 
 .vixen-video .vixen-header h1 {
 	float: left;
+	pointer-events: none;
 	color: white;
 	font-size: 13pt;
 	text-shadow: black 0px 0px 5px;
@@ -164,6 +166,7 @@
 }
 
 .vixen-toolbar button:before {
+	text-align: center;
 	display: block;
 	position:absolute;
 	z-index:10;
@@ -212,7 +215,7 @@
 
 .vixen-scrubber {
 	position: relative;
-	min-width: 100px;
+	min-width: 70px;
 	height: 14px;
 	background-color: rgb(39,39,39);
 	top: 6px;
@@ -485,6 +488,7 @@
 	margin: 4px;
 	margin-top: 0px;
 	padding: 0px 5px;
+	padding-right: 0px;
 	line-height: 28px;
 	height: 30px;
 	width: 100%;
@@ -505,34 +509,33 @@
 	box-shadow:			rgba(0,0,0,0.36) 0px 2px 2px;
 }
 
-.vixen-dropdownwrapper:hover {
-	border-color: white;
-	-webkit-box-shadow: rgba(255,255,255,0.56) 0px 0px 10px;
-	-moz-box-shadow:	rgba(255,255,255,0.56) 0px 0px 10px;
-	-o-box-shadow:		rgba(255,255,255,0.56) 0px 0px 10px;
-	box-shadow:			rgba(255,255,255,0.56) 0px 0px 10px;
-}
-
 .vixen-dropdownwrapper label {
 	display: block;
 	min-width: 150px;
+	height: 30px !important;
+	overflow: hidden;
+	word-break: break-word;
+	text-overflow: elipsis;
 }
 
 .vixen-dropdownwrapper label:before {
 	font-family: ShadowIcons;
 	content: "\25CE";
+	font-size: 11pt;
 	line-height: 27px;
 	float: left;
 	width: 25px;
+	padding-right: 3px;
 	text-align: center;
 	color: #AAA;
 }
 
 .vixen-dropdownwrapper label:after {
-	float: right;
+	position: absolute;
 	width: 20px;
 	height: 28px;
-	margin-right: -5px;
+	top: 0px;
+	right: 0px;
 	
 	font-family: Helvetica, Arial, sans-serif;
 	font-size: 8pt;
@@ -556,7 +559,8 @@
 	border-bottom-right-radius: 3px;
 }
 
-.vixen-dropdownwrapper:hover label:after {
+.vixen-dropdownwrapper:hover label:after,
+.vixen-focus label:after {
 	color: #999;
 	border-left: solid #777 1px;
 }
@@ -572,10 +576,241 @@
 	color: black;
 }
 
-.vixen-dropdownwrapper:hover {
+.vixen-dropdownwrapper:hover, .vixen-focus {
 	border-color: white;
 	-webkit-box-shadow: rgba(255,255,255,0.56) 0px 0px 10px;
 	-moz-box-shadow:	rgba(255,255,255,0.56) 0px 0px 10px;
 	-o-box-shadow:		rgba(255,255,255,0.56) 0px 0px 10px;
 	box-shadow:			rgba(255,255,255,0.56) 0px 0px 10px;
+}
+
+.vixen-currentselectorvalue {
+	color: #AAA;
+}
+
+/* Dropdown icons */
+
+.vixen-resselector label:before {
+	content: "\e007";
+}
+
+.vixen-captionsselector label:before {
+	content: "\e006";
+}
+
+.vixen-chapterselector label:before {
+	content: "\e008";
+}
+
+.vixen-audiotrackselector label:before {
+	content: "\e00a";
+}
+
+.vixen-videotrackselector label:before {
+	content: "\e009";
+}
+
+
+/* Bigger toolbar with finger-sized hotspots for touch devices... */
+
+@media only screen and (max-width: 590px) {
+	
+	.vixen-playing .vixen-toolbar {
+		opacity: 1;
+	}
+	
+	.vixen-toolbar {
+		position: static;
+		margin-top: 0px;
+		height: 60px;
+	}
+	
+	.vixen-toolbar label {
+		padding: 0px 8px;
+		line-height: 57px;
+		font-size: 11pt;
+		min-width: 50px;
+	}
+	
+	.vixen-toolbar button {
+		width: 55px;
+		line-height: 58px;
+		height: 58px;
+	}
+	
+	.vixen-toolbar button:before {
+		width: 55px;
+		line-height: 58px;
+		font-size: 18pt;
+	}
+	
+	.vixen-volumegroup {
+		width: 55px;
+		padding-top: 80px;
+		height: 58px;
+		margin-top: -78px;
+		position: relative;
+	}
+	
+	.vixen-video .vixen-header h1 {
+		width: 40%;
+	}
+	
+	.vixen-scrubber {
+		height: 24px;
+		top: 17px;
+		
+		-webkit-border-radius: 12px;
+		-moz-border-radius: 12px;
+		-o-border-radius: 12px;
+		-msie-border-radius: 12px;
+		border-radius: 12px;
+	}
+	
+	.vixen-thumb, .vixen-volumethumb {
+		float: right;
+	
+		width: 21px;
+		height: 21px;
+		margin-top: 1px;
+		-webkit-border-radius: 11px;
+		-moz-border-radius: 11px;
+		-o-border-radius: 11px;
+		border-radius: 11px;
+	}
+	
+	.vixen-playprogress {
+		min-width: 21px;
+	}
+	
+	.vixen-volumeslider {
+		min-height: 70px;
+		margin-left: 18px;
+		width: 24px;
+		
+		-webkit-border-radius: 12px;
+		-moz-border-radius: 12px;
+		-o-border-radius: 12px;
+		-msie-border-radius: 12px;
+		border-radius: 12px;
+	}
+	
+	.vixen-volumesliderinner {
+		width: 100%;
+		min-height: 22px;
+		-webkit-border-radius: 12px;
+		-moz-border-radius: 12px;
+		-o-border-radius: 12px;
+		-msie-border-radius: 12px;
+		border-radius: 12px;
+	}
+	
+}
+
+/* Now for the fullscreen button styling... */
+
+.vixen-fullscreen .vixen-toolbar {
+	position: absolute;
+	bottom: 10%;
+	left: 50%;
+	width: 500px;
+	margin-left: -250px;
+	height: 60px;
+	
+	-webkit-border-radius: 10px;
+	-msie-border-radius: 10px;
+	-moz-border-radius: 10px;
+	-o-border-radius: 10px;
+	border-radius: 10px;
+}
+
+.vixen-fullscreen .vixen-toolbar button {
+	width: 50px;
+}
+
+.vixen-fullscreen .vixen-toolbar button,
+.vixen-fullscreen .vixen-toolbar button:before {
+	width: 55px;
+	line-height: 58px;
+	height: 58px;
+	font-size: 18pt;
+}
+
+.vixen-fullscreen .vixen-toolbar .vixen-volumegroup {
+	margin: 0px;
+	width: 120px;
+	padding: 0px;
+}
+
+.vixen-fullscreen .vixen-toolbar label {
+	padding: 0px 8px;
+	line-height: 57px;
+	font-size: 9pt;
+	min-width: 50px;
+}
+
+.vixen-fullscreen .vixen-scrubber,
+.vixen-fullscreen .vixen-volumeslider {
+	height: 16px;
+	min-height: 16px;
+	min-width: 60px;
+	top: 19px;
+	
+	-webkit-border-radius: 8px;
+	-moz-border-radius: 8px;
+	-o-border-radius: 8px;
+	-msie-border-radius:8px;
+	border-radius: 8px;
+	
+	visibility: visible !important;
+}
+
+.vixen-fullscreen .vixen-thumb,
+.vixen-fullscreen .vixen-volumethumb {
+	float: right;
+
+	width: 13px;
+	height: 13px;
+	margin-top: 1px;
+	-webkit-border-radius: 7px;
+	-moz-border-radius: 7px;
+	-o-border-radius: 7px;
+	border-radius: 7px;
+}
+
+.vixen-fullscreen .vixen-playprogress {
+	min-width: 14px;
+}
+
+.vixen-fullscreen .vixen-volumeslider {
+	margin-left: 50px;
+	
+	border: solid rgb(10,10,10) 1px;
+	border-bottom-color: rgb(102,102,102);
+	
+	background-image: -webkit-gradient(linear, left top, left bottom, from(rgb(39, 39, 39)), to(rgb(67, 66, 66)));
+	background-image: -webkit-linear-gradient(top, rgb(39, 39, 39), rgb(67, 66, 66));
+	background-image: -moz-linear-gradient(top, rgb(39, 39, 39), rgb(67, 66, 66));
+	background-image: -o-linear-gradient(top, rgb(39, 39, 39), rgb(67, 66, 66));
+	background-image: -ms-linear-gradient(top, rgb(39, 39, 39), rgb(67, 66, 66));
+	background-image: linear-gradient(top, rgb(39, 39, 39), rgb(67, 66, 66));
+	
+	-webkit-box-shadow: none;
+	-msie-box-shadow: none;
+	-moz-box-shadow: none;
+	-o-box-shadow: none;
+	box-shadow: none;
+}
+
+.vixen-fullscreen .vixen-volumesliderinner {
+	margin: 0px;
+	
+	width: 100%;
+	min-height: 14px;
+	min-width: 15px;
+	-webkit-border-radius: 7px;
+	-msie-border-radius: 7px;
+	-moz-border-radius: 7px;
+	-o-border-radius: 7px;
+	border-radius: 7px;
 }
