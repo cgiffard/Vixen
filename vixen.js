@@ -1,10 +1,11 @@
 // Vixen.
 
 /*global HTMLVideoElement:true, HTMLAudioElement:true, HTMLElement:true,
-document:true, module:true, createVixel:true, window:true, localStorage:true */
+document:true, module:true, createVixel:true, window:true, localStorage:true,
+setTimeout:true */
 
 (function(glob) {
-	"use strict";
+	// "use strict";
 	
 	function Vixen(mediaObject,options) {
 		var self = this;
@@ -47,18 +48,15 @@ document:true, module:true, createVixel:true, window:true, localStorage:true */
 		
 		// Check API support for newer features and store functions we discover
 		self.fullScreenEnabled = Vixen.unprefix("fullScreenEnabled",document);
-		self.requestFullScreen = Vixen.unprefix("requestFullScreen",document.body);
-		self.cancelFullScreen = Vixen.unprefix("cancelFullScreen",document);
-		
-		// TODO
-		if (self.requestFullScreen) self.requestFullScreen = self.requestFullScreen.bind(document.body);
-		if (self.cancelFullScreen) self.requestFullScreen.bind(document);
 		
 		// Get the volume - if we've saved it!
 		var keyName = self.namespace + "-volume";
 		if (window.localStorage && localStorage.getItem instanceof Function)
 			if (localStorage.getItem(keyName) !== null)
 				self.media.volume = parseFloat(localStorage.getItem(keyName));
+		
+		// And save our prior volume...
+		self.previousVolume = self.media.volume;
 		
 		// Build the UI...
 		self.buildUI();
@@ -130,7 +128,7 @@ document:true, module:true, createVixel:true, window:true, localStorage:true */
 				resDropdown.addItem(resolutionText, resolution, function() {
 					var prevCurrentTime = self.media.currentTime;
 					self.media.src = source.src;
-					self.media.resumePlayingAt = prevCurrentTime;
+					self.resumePlayingAt = prevCurrentTime;
 				});
 			}
 		}
@@ -203,7 +201,9 @@ document:true, module:true, createVixel:true, window:true, localStorage:true */
 					});
 					
 					cueArr.forEach(function(cue) {
-						chapterList.addItem(cue.text)
+						chapterList.addItem(cue.text,null,function() {
+							self.jumpTo(cue.startTime);
+						});
 					});
 					
 					self.ui.auxtools.a(chapterList);
@@ -244,15 +244,69 @@ document:true, module:true, createVixel:true, window:true, localStorage:true */
 			}
 		}
 		
+		// Audio Tracks...
+		if (self.media.audioTracks && self.media.audioTracks.length) {
+			
+			// Build the selector...
 		
+			var audioTracks = [].slice.call(self.media.audioTracks,0),
+				audioTrackList =
+				c.createSelector("Audio Tracks","audiotrackselector",self);
+				self.ui.auxtools.a(audioTrackList);
+			
+			audioTrackList.addItem("Audio tracks off","");
+			
+			audioTracks.forEach(function(track, index) {
+				audioTrackList.addItem(
+					"[" + (track.language||"unknown") + "] " + track.label,
+					null,
+					function() {
+						// Switch off all other tracks...
+						audioTracks.forEach(function(loopTrack) {
+							loopTrack.mode = 0;
+						});
+						
+						// Switch on our track
+						track.mode = 2;
+					});
+				
+				if (track.mode === 2) {
+					audioTrackList.selectedIndex = index;
+				}
+			});
+		}
 		
+		// Video Tracks...
+		if (self.media.videoTracks && self.media.videoTracks.length) {
 		
-		//
-		//var audioTrackList = c.createSelector("Audio Tracks","audiotrackselector",self);
-		//self.ui.auxtools.a(audioTrackList);
-		//
-		//var videoTrackList = c.createSelector("Video Tracks","videotrackselector",self);
-		//self.ui.auxtools.a(videoTrackList);
+			// Build the selector...
+		
+			var videoTracks = [].slice.call(self.media.videoTracks,0),
+				videoTrackList =
+				c.createSelector("Video Tracks","videotrackselector",self);
+				self.ui.auxtools.a(videoTrackList);
+		
+			videoTrackList.addItem("Video tracks off","");
+		
+			videoTracks.forEach(function(track, index) {
+				videoTrackList.addItem(
+					"[" + (track.language||"unknown") + "] " + track.label,
+					null,
+					function() {
+						// Switch off all other tracks...
+						videoTracks.forEach(function(loopTrack) {
+							loopTrack.mode = 0;
+						});
+		
+						// Switch on our track
+						track.mode = 2;
+					});
+				
+				if (track.mode === 2) {
+					videoTrackList.selectedIndex = index;
+				}
+			});
+		}
 		
 		// Bulk of the UI...
 		c("div","container").c("wump")
@@ -270,7 +324,7 @@ document:true, module:true, createVixel:true, window:true, localStorage:true */
 		
 		// Is the fullscreen API present in the browser?
 		// Is this a video (i.e. does fullscreen even make sense?)
-		if (self.requestFullScreen &&
+		if (self.fullScreenEnabled &&
 			self.media instanceof HTMLVideoElement) {
 			
 			// Append a fullscreen button
@@ -302,6 +356,15 @@ document:true, module:true, createVixel:true, window:true, localStorage:true */
 		
 		self.ui.volumeslider.vertical =
 			self.ui.volumeslider.offsetHeight > self.ui.volumeslider.offsetWidth;
+		
+		// Unprefix functions we need for fullscreen...
+		self.requestFullScreen = Vixen.unprefix("requestFullScreen",self.ui.container);
+		self.cancelFullScreen = Vixen.unprefix("cancelFullScreen",document);
+		
+		// TODO
+		if (self.requestFullScreen)
+			self.requestFullScreen =
+				self.requestFullScreen.bind(self.ui.container);
 		
 		// Enable chaining...
 		return self;
@@ -406,11 +469,20 @@ document:true, module:true, createVixel:true, window:true, localStorage:true */
 		
 		// And document events
 		[
-			// Get the unprefixed event for
-			Vixen.unprefix("fullscreenchange",document)
-			].forEach(function(evt) {
+			"webkitfullscreenchange",
+			"msiefullscreenchange",
+			"mozfullscreenchange",
+			"ofullscreenchange",
+			"fullscreenchange" ].forEach(function(evt) {
 			
 			document.addEventListener(evt,function(evt) {
+				
+				// Often when we go fullscreen/unfullscreen we haven't got
+				// proper dimensions yet. Clean up quickly!
+				setTimeout(function() {
+						self.updateUI();
+					},100);
+				
 				self.updateUI();
 			});
 		});
@@ -486,12 +558,18 @@ document:true, module:true, createVixel:true, window:true, localStorage:true */
 		
 		// TODO: Update for horizontal/vertical compatibility...
 		if (!self.ui.scrubber.dragging)
-			self.ui.playprogress.s("width",playPercentage+"%");
+			self.ui.playprogress.s(
+				(self.ui.scrubber.vertical ? "height" : "width"),
+				playPercentage+"%");
 		
-		self.ui.loadprogress.s("width",loadPercentage+"%");
+		self.ui.loadprogress.s(
+			(self.ui.scrubber.vertical ? "height" : "width"),
+			loadPercentage+"%");
 		
 		if (!self.ui.volumeslider.dragging)
-			self.ui.volumesliderinner.s("height",(self.media.volume*100));
+			self.ui.volumesliderinner.s(
+				(self.ui.volumeslider.vertical ? "height" : "width"),
+				(self.media.volume*100));
 		
 		// Render time remaining and time elapsed timestamps out to labels...
 		timeRemaining = self.media.duration-self.media.currentTime;
@@ -526,6 +604,9 @@ document:true, module:true, createVixel:true, window:true, localStorage:true */
 		self.ui.container.c("loading", self.media.networkState===2 ? 1 : -1);
 		self.ui.container.c("nosource", self.media.networkState===3 ? 1 : -1);
 		
+		// Is the video muted?
+		self.ui.container.c("muted", self.media.muted ? 1 : -1);
+		
 		// Are we playing?
 		if (self.media.paused) {
 			self.ui.playpause.t("Play");
@@ -539,17 +620,21 @@ document:true, module:true, createVixel:true, window:true, localStorage:true */
 		
 		// Are we still fullscreen? Is there a mismatch between what the
 		// browser thinks and what we think? Correct it!
-		if (Vixen.unprefix("isfullscreen",document) !== self.isfullscreen &&
+		if (!!Vixen.unprefix("fullScreenElement",document) !== self.isfullscreen &&
 			self.ui.fullscreenbutton) {
-			
-			if (Vixen.unprefix("isfullscreen",document)) {
+				
+			if (!!Vixen.unprefix("fullScreenElement",document)) {
+				
 				self.ui.container.c("fullscreen");
 				self.ui.fullscreenbutton.t("Exit Fullscreen");
 				self.isfullscreen = true;
+				
 			} else {
+				
 				self.ui.container.c("fullscreen",-1);
 				self.ui.fullscreenbutton.t("Fullscreen");
 				self.isfullscreen = false;
+				
 			}
 		}
 		
@@ -559,34 +644,8 @@ document:true, module:true, createVixel:true, window:true, localStorage:true */
 	Vixen.prototype.handleMediaEvent = function(eventData) {
 		var self = this;
 		
-		/* 
-		
-		events:
-		
-		"abort",
-		"canplay",
-		"canplaythrough",
-		"click",
-		"durationchange",
-		"emptied",
-		"ended",
-		"error",
-		"loadeddata",
-		"loadedmetadata",
-		"loadstart",
-		"pause",
-		"play",
-		"playing",
-		"progress",
-		"ratechange",
-		"seeked",
-		"seeking",
-		"stalled",
-		"suspend",
-		"timeupdate",
-		"volumechange",
-		"waiting" 
-		*/
+		// Mostly just stubbed placeholders for event handling which may be in
+		// place soon.
 		
 		switch (eventData.type) {
 			case "click":
@@ -602,34 +661,37 @@ document:true, module:true, createVixel:true, window:true, localStorage:true */
 				break;
 				
 			case "volumechange":
+			
+				if (self.media.volume > 0) {
+					// Save video volume prior to being muted...
+					self.previousVolume = self.media.volume;
+				}
 				
 				break;
 			
-			case "loadeddata":
-			case "loadedmetadata":
-			case "loadstart":
 			case "suspend":
 			case "stalled":
 			case "waiting":
 				
 				break;
 			
+			case "loadedmetadata":
+			case "canplay":
+			case "canplaythrough":
+				
+				// If we previously changed resolution and want to resume at a
+				// certain point, we'll have flagged that in resumePlayingAt.
+				//
+				// Jump to that time and clear the flag.
+				
+				if (self.resumePlayingAt) {
+					self.jumpTo(self.resumePlayingAt);
+					self.resumePlayingAt = 0;
+				}
+				
+				break;
 			
 		}
-		
-		// Media state...
-		// buffered
-		// currentSrc
-		// duration
-		// ended
-		// error
-		// networkState
-		// paused
-		// played
-		// readyState
-		// seekable
-		// seeking
-		// startTime
 		
 		self.updateUI();
 		self.emit(eventData.type);
@@ -760,6 +822,12 @@ document:true, module:true, createVixel:true, window:true, localStorage:true */
 			
 			if (window.localStorage && localStorage.setItem)
 				localStorage.setItem(self.namespace + "-volume",volume);
+			
+			if (volume === 0) {
+				self.media.muted = true;
+			} else {
+				self.media.muted = false;
+			}
 			
 			self.media.volume = volume;
 			return self;
@@ -974,10 +1042,6 @@ document:true, module:true, createVixel:true, window:true, localStorage:true */
 			if (search.exec(fName)) {
 				if (lookIn[fName] !== null && !fName.match(/^on/))
 					return lookIn[fName];
-				
-				// Ok, it was null && matched '^on' - probably an event.
-				// Remove leading 'on' if present and return name.
-				return fName.replace(/^on/,"");
 			}
 		}
 		

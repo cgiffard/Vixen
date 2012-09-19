@@ -45,11 +45,11 @@
 	font-family: "Helvetica Neue", Arial, Helvetica, sans-serif;
 }
 
-.vixen-container.vixden-fullscreen {
+.vixen-container.vixen-fullscreen {
 	position: absolute;
 	top: 0px;
 	width: 0px;
-	height: 100% !important;
+	height: 100%;
 	width: 100%;
 }
 
