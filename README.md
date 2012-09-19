@@ -3,6 +3,7 @@ Vixen
 
 Ultra minimal video player.
 
+![Vixen showing video with shadow theme...](https://www.dropbox.com/s/99sa3m07xlxvejd/shadow.png?dl=1)
 
 Goals:
 
