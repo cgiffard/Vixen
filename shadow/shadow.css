@@ -88,12 +88,8 @@
 	width: 55%;
 }
 
-.vixen-playing .vixen-header {
-	opacity: 0;
-}
-
-.vixen-container:hover .vixen-header {
-	opacity: 1;
+.vixen-playing.vixen-ui-activity-timeout .vixen-header {
+	opacity: 0 !important;
 }
 
 .vixen-media {
@@ -135,12 +131,8 @@
 	transition: opacity linear 250ms;
 }
 
-.vixen-playing .vixen-toolbar {
+.vixen-playing.vixen-ui-activity-timeout .vixen-toolbar {
 	opacity: 0;
-}
-
-.vixen-container:hover .vixen-toolbar {
-	opacity: 1;
 }
 
 .vixen-toolbar > * {
@@ -397,6 +389,10 @@
 	background-image: linear-gradient(left, rgb(39, 39, 39), rgb(67, 66, 66));
 
 	-webkit-box-shadow: rgb(255,255,255) 0px 0px 2px;
+}
+
+.vixen-volumeslider.vixen-dragging {
+	visibility: visible;
 }
 
 .vixen-volumesliderinner {

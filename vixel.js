@@ -88,7 +88,8 @@
 						offsetLeft = 0,
 						offsetTop = 0,
 						pointerNode = element;
-					
+						
+					element.c("dragging");
 					element.dragging = true;
 					
 					if (pointerNode.offsetParent) {
@@ -123,6 +124,7 @@
 						element.moveListener = on("mousemove",eventHandler);
 						on("mouseup",function(evt) {
 							element.dragging = false;
+							element.c("dragging",-1);
 						});
 					}
 				});
