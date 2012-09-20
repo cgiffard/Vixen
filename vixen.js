@@ -98,6 +98,7 @@ setTimeout:true, clearTimeout:true */
 		self.playing			= false;
 		self.readyState			= self.media.readyState;
 		self.resumePlayingAt	= 0;
+		self.currentChapter		= "";
 		
 		return self;
 	}
@@ -384,6 +385,21 @@ setTimeout:true, clearTimeout:true */
 		} else {
 			self.ui.container.c("audio");
 		}
+		
+		// Slider accessibility...
+		self.ui.volumeslider.r("slider")
+			.setAttribute("aria-label","Volume");
+		
+		self.ui.scrubber.r("progressbar")
+			.setAttribute("aria-label","Playback progress");
+		
+		// Accessibility for time labels
+		self.ui.elapsed.r("progressbar").setAttribute("aria-label","Time elapsed");
+		self.ui.remaining.r("progressbar").setAttribute("aria-label","Time remaining");
+		self.ui.elapsed.setAttribute("aria-valuetext","0 seconds");
+		self.ui.remaining.setAttribute("aria-valuetext","0 seconds");
+		self.ui.elapsed.setAttribute("aria-live","off");
+		self.ui.remaining.setAttribute("aria-live","off");
 		
 		// Now swap out the media for the container
 		c.replace(self.media,self.ui.container);
@@ -729,6 +745,21 @@ setTimeout:true, clearTimeout:true */
 			}
 		}
 		
+		// Accessible value text for less obvious elements
+		var humanElapsedTime =
+				self.formatTime(self.media.currentTime,true),
+			humanRemainingTime =
+				self.formatTime(self.media.duration-self.media.currentTime,true);
+		
+		self.ui.elapsed.setAttribute("aria-valuetext",humanElapsedTime);
+		self.ui.remaining.setAttribute("aria-valuetext",humanRemainingTime);
+		
+		self.ui.volumeslider
+			.setAttribute("aria-valuetext",(self.media.volume*100|0) + " percent");
+		
+		self.ui.scrubber
+			.setAttribute("aria-valuetext",(playPercentage|0) + " percent complete.");
+		
 		self.emit("updateui");
 		
 		return self;
@@ -837,9 +868,8 @@ setTimeout:true, clearTimeout:true */
 			
 			case "KeyboardEvent":
 				
-				if (!eventData.target.tagName.match(/button/i) &&
-					!eventData.target.tagName.match(/select/i) &&
-					eventData.type === "keydown") {
+				if (eventData.type === "keydown" &&
+					!eventData.target.tagName.match(/select/i)) {
 					
 					if (eventData.keyCode === 39) {
 						self.skipForward();
@@ -865,7 +895,9 @@ setTimeout:true, clearTimeout:true */
 						eventData.cancelBubble = true;
 					}
 					
-					if (eventData.keyCode === 32) {
+					if (!eventData.target.tagName.match(/button/i) &&
+						eventData.keyCode === 32) {
+						
 						self.playpause();
 						eventData.preventDefault();
 						eventData.cancelBubble = true;
@@ -910,20 +942,33 @@ setTimeout:true, clearTimeout:true */
 		minutes, and seconds (like '04:20:23'.)
 	
 	*/
-	Vixen.prototype.formatTime = function(timestamp) {
+	Vixen.prototype.formatTime = function(timestamp,human) {
 		var seconds = (timestamp % 60) | 0,
 			minutes	= ((timestamp / 60) % 60) | 0,
 			hours	= (timestamp / (60*60)) | 0,
 			string	= "";
 		
-		// Pad if required...
-		if (hours && hours < 10) hours = "0" + String(hours);
-		if (minutes < 10) minutes = "0" + String(minutes);
-		if (seconds < 10) seconds = "0" + String(seconds);
-		
-		if (hours) string = hours + ":";
-		
-		return string + minutes + ":" + seconds;
+		if (human) {
+			if (hours)
+				string += hours + " hours" + (minutes || seconds? ", and " : "");
+			if (minutes)
+				string += minutes + " minutes" + (seconds ? ", and " : "");
+			if (seconds)
+				string += seconds + " seconds";
+			
+			return string;
+			
+		} else {
+			
+			// Pad if required...
+			if (hours && hours < 10) hours = "0" + String(hours);
+			if (minutes < 10) minutes = "0" + String(minutes);
+			if (seconds < 10) seconds = "0" + String(seconds);
+			
+			if (hours) string = hours + ":";
+			
+			return string + minutes + ":" + seconds;
+		}
 	};
 	
 	/*

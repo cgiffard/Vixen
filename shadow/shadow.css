@@ -40,8 +40,9 @@
 	position: relative;
 	overflow: hidden;
 	background-color: black;
-	min-width: 300px;
+	min-width: 340px;
 	min-height: 30px;
+	max-height: 100%;
 	font-family: "Helvetica Neue", Arial, Helvetica, sans-serif;
 }
 

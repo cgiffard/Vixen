@@ -29,5 +29,8 @@ That's it! :)
 	in IE < 9, and never will. It does support a fallback handler!
 *	Don't polyfill. Leave captioning, format support, etc. up to external
 	libraries. But at the same time:
-*	No dependencies! Just ES5.
 *	Support newer standards, if available in the browser.
+*	No dependencies! Just ES5.
+*	Accessibility! Every aspect of the application should be usable with a screen
+	reader or assistive device. Colour-contrast adhered to in all aspects of the
+	theme. Fully keyboard accessible.

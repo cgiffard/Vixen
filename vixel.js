@@ -52,7 +52,9 @@
 			// Set the inner HTML and the title of an element
 			element.t = function(title) {
 				element.innerHTML = title;
-				element.setAttribute("title",title);
+				// I determined that this was annoying for screen reader users.
+				// Can put it back if required.
+				// element.setAttribute("title",title);
 				return element;
 			};
 			
@@ -169,6 +171,10 @@
 			label.c("selectorlabel");
 			wrapper.c("dropdownwrapper");
 			valueSpan.c("currentselectorvalue");
+			
+			// Don't show the value of the selector to screen readers - they can
+			// get the value from the popup list instead.
+			valueSpan.setAttribute("aria-hidden","true");
 			
 			if (className) {
 				wrapper.c(className);
