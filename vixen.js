@@ -165,11 +165,16 @@ setTimeout:true */
 					resolutionText = resolution + "p" +
 									(resolution >= 720 ? " HD" : " SD");
 				
-				resDropdown.addItem(resolutionText, resolution, function() {
-					var prevCurrentTime = self.media.currentTime;
-					self.media.src = source.src;
-					self.resumePlayingAt = prevCurrentTime;
-				});
+				// Closure to ensure link to source is correct!
+				(function(source) {
+					
+					resDropdown.addItem(resolutionText, resolution, function() {
+						var prevCurrentTime = self.media.currentTime;
+						self.media.src = source.src;
+						self.resumePlayingAt = prevCurrentTime;
+					});
+					
+				})(source);
 			}
 		}
 		
