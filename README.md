@@ -3,7 +3,7 @@ Vixen
 
 Ultra minimal video player.
 
-![Vixen showing video with shadow theme...](https://cgiffard.com/github/vixen/vixen-shadow-ui-2.png)
+![Vixen showing video with shadow theme...](http://cgiffard.com/github/vixen/vixen-shadow-ui-2.png)
 
 ## Example
 
