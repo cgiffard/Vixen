@@ -2,7 +2,7 @@
 
 /*global HTMLVideoElement:true, HTMLAudioElement:true, HTMLElement:true,
 document:true, module:true, createVixel:true, window:true, localStorage:true,
-setTimeout:true */
+setTimeout:true, clearTimeout:true */
 
 (function(glob) {
 	"use strict";
@@ -660,7 +660,7 @@ setTimeout:true */
 		if (!self.ui.volumeslider.dragging)
 			self.ui.volumesliderinner.s(
 				(self.ui.volumeslider.vertical ? "height" : "width"),
-				(self.media.volume*100));
+				(self.volume()*100) + "%");
 		
 		// Render time remaining and time elapsed timestamps out to labels...
 		timeRemaining = self.media.duration-self.media.currentTime;
@@ -766,6 +766,9 @@ setTimeout:true */
 				
 			case "ended":
 				
+				self.ui.container.c("finished");
+				self.pause();
+				
 				break;
 				
 			case "volumechange":
@@ -822,16 +825,51 @@ setTimeout:true */
 	
 	*/
 	Vixen.prototype.handleUIEvent = function(eventData) {
-		var self = this;
+		var self = this,
+			eventClass =
+				String(eventData)
+					.replace(/\[object /i,"")
+					.replace(/\]/g,"");
 		
-		switch (eventData.type) {
-			case "click":
+		switch (eventClass) {
+			case "MouseEvent":
 				break;
 			
-			case "keypress":
+			case "KeyboardEvent":
 				
-				if (!eventData.target.tagName.match(/button/)) {
+				if (!eventData.target.tagName.match(/button/i) &&
+					!eventData.target.tagName.match(/select/i) &&
+					eventData.type === "keydown") {
 					
+					if (eventData.keyCode === 39) {
+						self.skipForward();
+						eventData.preventDefault();
+						eventData.cancelBubble = true;
+					}
+					
+					if (eventData.keyCode === 37) {
+						self.skipBackward();
+						eventData.preventDefault();
+						eventData.cancelBubble = true;
+					}
+					
+					if (eventData.keyCode === 38) {
+						self.volumeUp();
+						eventData.preventDefault();
+						eventData.cancelBubble = true;
+					}
+					
+					if (eventData.keyCode === 40) {
+						self.volumeDown();
+						eventData.preventDefault();
+						eventData.cancelBubble = true;
+					}
+					
+					if (eventData.keyCode === 32) {
+						self.playpause();
+						eventData.preventDefault();
+						eventData.cancelBubble = true;
+					}
 				}
 				
 				break;
@@ -1022,6 +1060,59 @@ setTimeout:true */
 	};
 	
 	/*
+		Public: Skips forward by a predetermined amount (5% or 30 seconds,
+				whichever is smaller.) Minimum skip time of five seconds.
+		
+		Examples
+		
+			myVideo.skipForward();
+		
+		Returns the Vixen object against which this method was called.
+	
+	*/
+	Vixen.prototype.skipForward = function() {
+		var self = this,
+			skipTo = 0,
+			skipAmount = (self.media.duration * 0.05);
+			skipAmount = skipAmount > 30 ? 30 : skipAmount;
+			skipAmount = skipAmount < 5 ? 5 : skipAmount;
+		
+		skipTo = self.media.currentTime + skipAmount;
+		skipTo = skipTo > self.media.duration ? self.media.duration : skipTo;
+		
+		self.jumpTo(skipTo);
+		
+		return self;
+	};
+	
+	
+	/*
+		Public: Skips backward by a predetermined amount (5% or 30 seconds,
+				whichever is smaller.) Minimum skip time of five seconds.
+		
+		Examples
+		
+			myVideo.skipBackward();
+		
+		Returns the Vixen object against which this method was called.
+	
+	*/
+	Vixen.prototype.skipBackward = function() {
+		var self = this,
+			skipTo = 0,
+			skipAmount = (self.media.duration * 0.05);
+			skipAmount = skipAmount > 30 ? 30 : skipAmount;
+			skipAmount = skipAmount < 5 ? 5 : skipAmount;
+		
+		skipTo = self.media.currentTime - skipAmount;
+		skipTo = skipTo < 0 ? 0 : skipTo;
+		
+		self.jumpTo(skipTo);
+		
+		return self;
+	};
+	
+	/*
 		Public: Sets or returns the volume for a media element.
 		
 		volume		-	Optional number between 0 and 1 describing media volume.
@@ -1038,7 +1129,8 @@ setTimeout:true */
 	*/
 	Vixen.prototype.volume = function(volume) {
 		var self = this;
-		if (volume !== null) {
+		
+		if (volume !== null && volume !== undefined) {
 			
 			if (typeof volume !== "number" || isNaN(volume))
 				throw new Error("Non-numeric or NaN volume unacceptable.");
@@ -1064,6 +1156,46 @@ setTimeout:true */
 			return self.media.volume;
 		}
 	}
+	
+	/*
+		Public: Increases volume by a predetermined amount (0.1, or 10%.)
+		
+		Examples
+		
+			myVideo.volumeUp();
+		
+		Returns the Vixen object against which this method was called.
+	
+	*/
+	Vixen.prototype.volumeUp = function() {
+		var self = this,
+			volumeTo = self.volume() + 0.1;
+			volumeTo = volumeTo > 1 ? 1 : volumeTo;
+		
+		self.volume(volumeTo);
+		
+		return self;
+	};
+	
+	/*
+		Public: Decreases volume by a predetermined amount (0.1, or 10%.)
+		
+		Examples
+		
+			myVideo.volumeDown();
+		
+		Returns the Vixen object against which this method was called.
+	
+	*/
+	Vixen.prototype.volumeDown = function() {
+		var self = this,
+			volumeTo = self.volume() - 0.1;
+			volumeTo = volumeTo < 0 ? 0 : volumeTo;
+		
+		self.volume(volumeTo);
+		
+		return self;
+	};
 	
 	/*
 		Public: Function for binding a handler to a Vixen event.
