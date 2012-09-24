@@ -15,6 +15,10 @@ window.addEventListener("load",function() {
 
 That's it! :)
 
+### Demo
+
+Try vixen at [the little demo I have set up for it.](http://cgiffard.com/demos/vixen/).
+
 ## Goals:
 
 *	Lean. Light. Attractive.
