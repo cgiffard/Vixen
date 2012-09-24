@@ -398,7 +398,7 @@
 
 .vixen-volumesliderinner {
 	position: absolute;
-	width: 12px;
+	width: 100%;
 	min-height: 10px;
 	bottom: 0px;
 	padding-right: 1px;
@@ -812,6 +812,11 @@
 	border-radius: 7px;
 }
 
-.captionator-cue-canvas {
+.captionator-cue-canvas,
+.captionator-cue-canvas * {
 	pointer-events: none;
+	color: white !important;
+	font-weight: bold;
+	font-family: "Helvetica Neue", Arial, Helvetica, sans-serif;
+	z-index: 2;
 }

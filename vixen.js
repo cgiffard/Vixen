@@ -743,10 +743,14 @@ setTimeout:true, clearTimeout:true, captionator:true */
 		
 		// Are we still fullscreen? Is there a mismatch between what the
 		// browser thinks and what we think? Correct it!
-		if (!!Vixen.unprefix("fullScreenElement",document) !== self.isfullscreen &&
-			self.ui.fullscreenbutton) {
+		if ((
+			!!Vixen.unprefix("fullScreenElement",document) !== self.isfullscreen ||
+			document.webkitIsFullScreen === false
+			)
+			&& self.ui.fullscreenbutton) {
 				
-			if (!!Vixen.unprefix("fullScreenElement",document)) {
+			if (!!Vixen.unprefix("fullScreenElement",document) &&
+				document.webkitIsFullScreen !== false) {
 				
 				self.ui.container.c("fullscreen");
 				self.ui.fullscreenbutton.t("Exit Fullscreen");
@@ -843,7 +847,7 @@ setTimeout:true, clearTimeout:true, captionator:true */
 				// Jump to that time and clear the flag.
 				
 				if (self.resumePlayingAt) {
-					self.jumpTo(self.resumePlayingAt);
+					self.jumpTo(self.resumePlayingAt).play();
 					self.resumePlayingAt = 0;
 				}
 				

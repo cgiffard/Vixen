@@ -80,8 +80,8 @@
 			
 			// Shorten lengthy get/'setAttribute' calls
 			element.attr = function(attributeName,attributeValue) {
-				if (attributeValue !== undefined &&
-					attributeValue !== null) {
+				if (attributeValue === undefined ||
+					attributeValue === null) {
 					return element.getAttribute(attributeName);
 				} else {
 					element.setAttribute(attributeName,attributeValue);
@@ -109,7 +109,7 @@
 						do {
 							offsetLeft += pointerNode.offsetLeft;
 							offsetTop += pointerNode.offsetTop;
-						} while (pointerNode = pointerNode.offsetParent);
+						} while ((pointerNode = pointerNode.offsetParent));
 					}
 					
 					function eventHandler(evt) {
@@ -175,7 +175,7 @@
 				wrapper		= c("div"),
 				selector	= c("select"),
 				idSeed		= String(Math.random()).replace(/\D/,""),
-				id 			= Vixel.namespace("rs-" + idSeed)
+				id			= Vixel.namespace("rs-" + idSeed),
 				handler		= function(){},
 				optionCount	= 0;
 			
