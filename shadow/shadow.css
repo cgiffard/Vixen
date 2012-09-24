@@ -283,31 +283,31 @@
 
 @-moz-keyframes loader {
 	from {
-		background-position-x: 0px;
+		background-position-x: 20px;
 	}
 	
 	to {
-		background-position-x: 20px;
+		background-position-x: 0px;
 	}
 }
 
 @-webkit-keyframes loader {
 	from {
-		background-position-x: 0px;
+		background-position-x: 20px;
 	}
 
 	to {
-		background-position-x: 20px;
+		background-position-x: 0px;
 	}
 }
 
 @keyframes loader {
 	from {
-		background-position-x: 0px;
+		background-position-x: 20px;
 	}
 
 	to {
-		background-position-x: 20px;
+		background-position-x: 0px;
 	}
 }
 
@@ -676,8 +676,13 @@
 		border-radius: 11px;
 	}
 	
-	.vixen-playprogress {
+	.vixen-playprogress,
+	.vixen-loadprogress {
 		min-width: 21px;
+		-webkit-border-radius: 11px;
+		-moz-border-radius: 11px;
+		-o-border-radius: 11px;
+		border-radius: 11px;
 	}
 	
 	.vixen-volumeslider {
@@ -775,8 +780,13 @@
 	border-radius: 7px;
 }
 
-.vixen-fullscreen .vixen-playprogress {
+.vixen-fullscreen .vixen-playprogress,
+.vixen-fullscreen .vixen-loadprogress {
 	min-width: 14px;
+	-webkit-border-radius: 7px;
+	-moz-border-radius: 7px;
+	-o-border-radius: 7px;
+	border-radius: 7px;
 }
 
 .vixen-fullscreen .vixen-volumeslider {
