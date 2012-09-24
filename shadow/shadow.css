@@ -784,7 +784,8 @@
 	-msie-border-radius:8px;
 	border-radius: 8px;
 	
-	visibility: visible !important;
+	opacity: 1;
+	pointer-events: normal;
 }
 
 .vixen-fullscreen .vixen-thumb,
