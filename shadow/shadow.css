@@ -46,6 +46,11 @@
 	font-family: "Helvetica Neue", Arial, Helvetica, sans-serif;
 }
 
+.vixen-container select, .vixen-container select * {
+	/* Fix text visibility issues on Windows */
+	color: black !important;
+}
+
 .vixen-container.vixen-fullscreen {
 	position: absolute;
 	top: 0px;
