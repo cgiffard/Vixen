@@ -266,7 +266,10 @@
 			};
 			
 			wrapper.on("change",changeHandler);
-			wrapper.on("keydown",changeHandler);
+			wrapper.on("keydown",function(eventData) {
+				// Don't trigger on tab.
+				if (eventData.keyCode !== 9) changeHandler();
+			});
 			
 			return wrapper;
 		};
