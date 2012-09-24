@@ -73,8 +73,18 @@
 			};
 			
 			// Try and replicate the accessibility features of a native control
-			element.ctrl = function(ariaRole,tabIndex) {
-				element.setAttribute("tabIndex",tabIndex);
+			element.ctrl = function(ariaRole) {
+				element.setAttribute("tabIndex",1);
+				
+				// Set a focus class on the element
+				element
+					.on("focusin",function() {
+						element.c("focus");
+					})
+					.on("focusout",function() {
+						element.c("focus",-1);
+					});
+				
 				return element.r(ariaRole);
 			};
 			
@@ -169,7 +179,7 @@
 		// Function for generating selector elements!
 		// Helpful since it's a more complicated function that would otherwise
 		// clutter vixen-core.
-		Vixel.createSelector = function(labelText,className,self) {
+		Vixel.createSelector = function(labelText,className,self,tabIndex) {
 			var label		= c("label"),
 				valueSpan	= c("span"),
 				wrapper		= c("div"),
@@ -182,6 +192,9 @@
 			label.c("selectorlabel");
 			wrapper.c("dropdownwrapper");
 			valueSpan.c("currentselectorvalue");
+			
+			// Set tab index by DOM order
+			selector.attr("tabindex",1);
 			
 			// Don't show the value of the selector to screen readers - they can
 			// get the value from the popup list instead.
@@ -237,7 +250,7 @@
 					handler = newHandler;
 			};
 			
-			wrapper.on("change", function() {
+			var changeHandler = function() {
 				var index = selector.selectedIndex,
 					optionList =
 						[].slice.call(wrapper.querySelectorAll("option"),0),
@@ -250,7 +263,10 @@
 				}
 				
 				handler(currentOption);
-			})
+			};
+			
+			wrapper.on("change",changeHandler);
+			wrapper.on("keydown",changeHandler);
 			
 			return wrapper;
 		};

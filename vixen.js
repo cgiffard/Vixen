@@ -136,8 +136,8 @@ setTimeout:true, clearTimeout:true, captionator:true */
 		
 		// Create volume control...
 		c("div","volumegroup")
-			.a(c("button","mute").t("Mute").ctrl("button",3))
-			.a(c("div","volumeslider").ctrl("slider",4)
+			.a(c("button","mute").t("Mute").ctrl("button"))
+			.a(c("div","volumeslider").ctrl("slider")
 				.a(
 					c("div","volumesliderinner")
 						.a(c("div","volumethumb"))));
@@ -158,9 +158,9 @@ setTimeout:true, clearTimeout:true, captionator:true */
 			.a(
 				c("div","toolbar")
 					.r("toolbar")
-					.a(c("button","playpause").t("Play").ctrl("button",1))
+					.a(c("button","playpause").t("Play").ctrl("button"))
 					.a(c("label","elapsed"))
-					.a(self.ui.scrubber.ctrl("slider",2))
+					.a(self.ui.scrubber.ctrl("slider"))
 					.a(c("label","remaining"))
 					.a(self.ui.volumegroup));
 		
@@ -193,9 +193,11 @@ setTimeout:true, clearTimeout:true, captionator:true */
 				(function(source) {
 					
 					resDropdown.addItem(resolutionText, resolution, function() {
-						var prevCurrentTime = self.media.currentTime;
-						self.media.src = source.src;
-						self.resumePlayingAt = prevCurrentTime;
+						if (self.media.currentSrc !== source.src) {
+							var prevCurrentTime = self.media.currentTime;
+							self.media.src = source.src;
+							self.resumePlayingAt = prevCurrentTime;
+						}
 					});
 					
 				})(source);
@@ -275,7 +277,8 @@ setTimeout:true, clearTimeout:true, captionator:true */
 						});
 					});
 					
-					self.ui.auxtools.a(chapterList);
+					if (cueArr.length)
+						self.ui.auxtools.a(chapterList);
 				}
 				
 				var chaptersLoaded = 0;
@@ -287,7 +290,7 @@ setTimeout:true, clearTimeout:true, captionator:true */
 					// What is this, seriously!?
 					var trackLoadAttemptCount = 0;
 					setTimeout(function waitForLoad() {
-						if (chapter.cues) {
+						if (chapter.cues && chapter.readyState > 1) {
 							chaptersLoaded ++;
 							
 							if (chaptersLoaded === chaptersArray.length) {
@@ -385,7 +388,8 @@ setTimeout:true, clearTimeout:true, captionator:true */
 			// Append a fullscreen button
 			self.ui.toolbar.a(
 				c("button","fullscreenbutton")
-					.t("Fullscreen"));
+					.t("Fullscreen")
+					.ctrl("button"));
 		}
 		
 		// Provide a class based on whether we're an audio or video player

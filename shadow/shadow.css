@@ -238,8 +238,18 @@
 }
 
 .vixen-scrubber:focus, .vixen-volumeslider:focus {
+	visibility: visible !important;
 	-webkit-box-shadow: white 0px 0px 5px 2px;
+	-msie-box-shadow: white 0px 0px 5px 2px;
+	-moz-box-shadow: white 0px 0px 5px 2px;
+	-o-box-shadow: white 0px 0px 5px 2px;
+	box-shadow: white 0px 0px 5px 2px;
 	outline: none;
+}
+
+.vixen-volumeslider.vixen-focus {
+	visibility: visible !important;
+	opacity: 1;
 }
 
 .vixen-playprogress {
@@ -371,7 +381,9 @@
 }
 
 .vixen-volumeslider {
-	visibility: hidden;
+	opacity: 0;
+	pointer-events: none;
+	
 	position: absolute;
 	min-height: 50px;
 	margin-left: 7px;
@@ -398,7 +410,8 @@
 }
 
 .vixen-volumeslider.vixen-dragging {
-	visibility: visible;
+	opacity: 1;
+	pointer-events: normal;
 }
 
 .vixen-volumesliderinner {
@@ -417,7 +430,8 @@
 }
 
 .vixen-volumegroup:hover .vixen-volumeslider {
-	visibility: visible;
+	opacity: 1;
+	pointer-events:normal;
 }
 
 /* TODO Gotta be a better way to do this. Going home now. */
@@ -428,7 +442,8 @@
 .vixen-volumeslider:focus,
 .vixen-mute:focus + .vixen-volumeslider,
 .vixen-mute:active + .vixen-volumeslider {
-	visibility: visible;
+	opacity: 1;
+	pointer-events: normal;
 }
 
 .vixen-errormsg {

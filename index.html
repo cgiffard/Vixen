@@ -76,8 +76,10 @@
 		<!-- Initialise Vixen! -->
 		<script>
 			var video;
-			window.addEventListener("load",function() {
-				video = Vixen.ify(document.querySelector("video"));
+			(window.addEventListener||window.attachEvent)("load",function() {
+				video = Vixen.ify(document.querySelector("video"),null,function() {
+					alert("JWPlayer or a similar fallback would have loaded!");
+				});
 			});
 		</script>
 	</body>
