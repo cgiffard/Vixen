@@ -40,7 +40,7 @@
 	position: relative;
 	overflow: hidden;
 	background-color: black;
-	min-width: 340px;
+	min-width: 320px;
 	min-height: 30px;
 	max-height: 100%;
 	font-family: "Helvetica Neue", Arial, Helvetica, sans-serif;
@@ -208,7 +208,7 @@
 
 .vixen-scrubber {
 	position: relative;
-	min-width: 70px;
+	min-width: 40px;
 	height: 14px;
 	background-color: rgb(39,39,39);
 	top: 6px;
