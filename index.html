@@ -9,11 +9,41 @@
 		<meta name="HandheldFriendly" content="True">
 		<meta name="MobileOptimized" content="320">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+		
+		<style>
+			body {
+				margin: 0px;
+				padding: 0px;
+				font-family: "Helvetica Neue", Arial, Helvetica, sans-serif;
+			}
+			
+			[role=main] {
+				color: #444;
+				padding: 0px;
+			}
+			
+			h1 {
+				background-color: #666;
+				color: white;
+				margin: 0px;
+				line-height: 2em;
+				padding-left: 0.5em;
+				padding-right: 0.5em;
+			}
+			
+			p {
+				line-height: 2em;
+				padding-left: 0.5em;
+				padding-right: 0.5em;
+			}
+		</style>
 	</head>
 	<body>
-		<h1>Vixen Demo</h1>
-		<p><a href="http://www.github.com/cgiffard/Vixen/">Fork Vixen on Github</a></p>
-		<p>Please log any issues you find!</p>
+		<section role="main">
+			<h1>Vixen Demo</h1>
+			<p><a href="http://www.github.com/cgiffard/Vixen/">Fork Vixen on Github</a></p>
+			<p>Please log any issues you find!</p>
+		</section>
 		<video id="thing" height="180" width="320" controls title="Quite &amp; Orange - cdak 4K Demo">
 			<!-- H.264 -->
 			<source src="video/quite_orange-cdak-240p.mp4" type="video/mp4" res="240"/>
