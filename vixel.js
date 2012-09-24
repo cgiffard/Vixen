@@ -78,6 +78,17 @@
 				return element.r(ariaRole);
 			};
 			
+			// Shorten lengthy get/'setAttribute' calls
+			element.attr = function(attributeName,attributeValue) {
+				if (attributeValue !== undefined &&
+					attributeValue !== null) {
+					return element.getAttribute(attributeName);
+				} else {
+					element.setAttribute(attributeName,attributeValue);
+				}
+				return element;
+			}
+			
 			// Little helper for implementing draggable functionality
 			element.ondrag = function(handler) {
 				element.addEventListener("mousedown",function(evt) {

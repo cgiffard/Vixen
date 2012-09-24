@@ -2,7 +2,7 @@
 
 /*global HTMLVideoElement:true, HTMLAudioElement:true, HTMLElement:true,
 document:true, module:true, createVixel:true, window:true, localStorage:true,
-setTimeout:true, clearTimeout:true */
+setTimeout:true, clearTimeout:true, captionator:true */
 
 (function(glob) {
 	"use strict";
@@ -145,9 +145,32 @@ setTimeout:true, clearTimeout:true */
 		// Create title header...
 		c("header","header");
 		
-		var mediaTitle = self.media.getAttribute("title");
+		var mediaTitle = self.media.attr("title");
 		if (mediaTitle && mediaTitle.replace(/\s/ig,"").length) {
 			self.ui.header.a(c("h1","title").t(mediaTitle))
+		}
+		
+		// Bulk of the UI...
+		c("div","container")
+			.r("application")
+			.a(self.ui.header)
+			.a(c("div","mediawrapper"))
+			.a(
+				c("div","toolbar")
+					.r("toolbar")
+					.a(c("button","playpause").t("Play").ctrl("button",1))
+					.a(c("label","elapsed"))
+					.a(self.ui.scrubber.ctrl("slider",2))
+					.a(c("label","remaining"))
+					.a(self.ui.volumegroup));
+		
+		// If Captionator is present...
+		// Get the TextTrack API ready for our use...
+		if (window.captionator && captionator.captionify) {
+			captionator.captionify(self.media,null,{
+				"controlHeight": self.options.controlHeight || 30,
+				"appendCueCanvasTo": self.ui.mediawrapper
+			});
 		}
 		
 		// Auxilliary tools...
@@ -277,12 +300,12 @@ setTimeout:true, clearTimeout:true */
 							// (webkit bug. Ugh)
 							chapter.mode = 1;
 							
-							// Try again, every 100msec, for ten seconds.
+							// Try again, every 50msec, for ten seconds.
 							// Then give up.
-							if (trackLoadAttemptCount < 100) {
+							if (trackLoadAttemptCount < 200) {
 								
 								trackLoadAttemptCount ++;
-								setTimeout(waitForLoad,100);
+								setTimeout(waitForLoad,50);
 							}
 						}
 					},100);
@@ -354,20 +377,6 @@ setTimeout:true, clearTimeout:true */
 			});
 		}
 		
-		// Bulk of the UI...
-		c("div","container")
-			.r("application")
-			.a(self.ui.header)
-			.a(c("div","mediawrapper"))
-			.a(
-				c("div","toolbar")
-					.r("toolbar")
-					.a(c("button","playpause").t("Play").ctrl("button",1))
-					.a(c("label","elapsed"))
-					.a(self.ui.scrubber.ctrl("slider",2))
-					.a(c("label","remaining"))
-					.a(self.ui.volumegroup));
-		
 		// Is the fullscreen API present in the browser?
 		// Is this a video (i.e. does fullscreen even make sense?)
 		if (self.fullScreenEnabled &&
@@ -387,19 +396,26 @@ setTimeout:true, clearTimeout:true */
 		}
 		
 		// Slider accessibility...
-		self.ui.volumeslider.r("slider")
-			.setAttribute("aria-label","Volume");
+		self.ui.volumeslider
+			.r("slider")
+			.attr("aria-label","Volume");
 		
-		self.ui.scrubber.r("progressbar")
-			.setAttribute("aria-label","Playback progress");
+		self.ui.scrubber
+			.r("progressbar")
+			.attr("aria-label","Playback progress");
 		
 		// Accessibility for time labels
-		self.ui.elapsed.r("progressbar").setAttribute("aria-label","Time elapsed");
-		self.ui.remaining.r("progressbar").setAttribute("aria-label","Time remaining");
-		self.ui.elapsed.setAttribute("aria-valuetext","0 seconds");
-		self.ui.remaining.setAttribute("aria-valuetext","0 seconds");
-		self.ui.elapsed.setAttribute("aria-live","off");
-		self.ui.remaining.setAttribute("aria-live","off");
+		self.ui.elapsed
+			.r("progressbar")
+			.attr("aria-label","Time elapsed")
+			.attr("aria-valuetext","0 seconds")
+			.attr("aria-live","off");
+			
+		self.ui.remaining
+			.r("progressbar")
+			.attr("aria-label","Time remaining")
+			.attr("aria-valuetext","0 seconds")
+			.attr("aria-live","off");
 		
 		// Now swap out the media for the container
 		c.replace(self.media,self.ui.container);
@@ -751,14 +767,14 @@ setTimeout:true, clearTimeout:true */
 			humanRemainingTime =
 				self.formatTime(self.media.duration-self.media.currentTime,true);
 		
-		self.ui.elapsed.setAttribute("aria-valuetext",humanElapsedTime);
-		self.ui.remaining.setAttribute("aria-valuetext",humanRemainingTime);
+		self.ui.elapsed.attr("aria-valuetext",humanElapsedTime);
+		self.ui.remaining.attr("aria-valuetext",humanRemainingTime);
 		
 		self.ui.volumeslider
-			.setAttribute("aria-valuetext",(self.media.volume*100|0) + " percent");
+			.attr("aria-valuetext",(self.media.volume*100|0) + " percent");
 		
 		self.ui.scrubber
-			.setAttribute("aria-valuetext",(playPercentage|0) + " percent complete.");
+			.attr("aria-valuetext",(playPercentage|0) + " percent complete.");
 		
 		self.emit("updateui");
 		
@@ -1424,6 +1440,10 @@ setTimeout:true, clearTimeout:true */
 			} else if (typeof selector == "string") {
 				selector = [].slice.call(document.querySelectorAll(selector));
 				result = selector.map(Vixen.ify);
+			
+			} else if (selector === null || selector === undefined) {
+				// Vixen-ify all video if no selector supplied!
+				result = Vixen.get("video");
 			}
 			
 			if (result.length === 1)

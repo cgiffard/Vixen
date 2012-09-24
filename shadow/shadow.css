@@ -811,3 +811,7 @@
 	-o-border-radius: 7px;
 	border-radius: 7px;
 }
+
+.captionator-cue-canvas {
+	pointer-events: none;
+}
