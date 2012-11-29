@@ -1401,7 +1401,7 @@ setTimeout:true, clearTimeout:true, captionator:true */
 		if (!media)
 			throw new Error("Requested media object not found.");
 		
-		if (typeof media === "array")
+		if (typeof media === "array" || media instanceof Array)
 			return media;
 		
 		if (media instanceof Vixen)
@@ -1442,7 +1442,11 @@ setTimeout:true, clearTimeout:true, captionator:true */
 			return selector;
 			
 		} else {
-			if (typeof selector === "array") {
+			
+			if (selector instanceof NodeList)
+				selector = [].slice.call(selector);
+			
+			if (typeof selector === "array" || selector instanceof Array) {
 				result = selector.map(Vixen.ify);
 			
 			} else if (typeof selector == "string") {
@@ -1454,7 +1458,7 @@ setTimeout:true, clearTimeout:true, captionator:true */
 				result = Vixen.get("video");
 			}
 			
-			if (result.length === 1)
+			if (result && typeof result === "array" && result.length === 1)
 				return result[0];
 			
 			return result;
