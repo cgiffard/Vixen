@@ -49,6 +49,7 @@
 .vixen-container select, .vixen-container select * {
 	/* Fix text visibility issues on Windows */
 	color: black !important;
+	background-color: white !important;
 }
 
 .vixen-container.vixen-fullscreen {
@@ -243,7 +244,7 @@
 	-msie-box-shadow: white 0px 0px 5px 2px;
 	-moz-box-shadow: white 0px 0px 5px 2px;
 	-o-box-shadow: white 0px 0px 5px 2px;
-	box-shadow: white 0px 0px 5px 2px;
+	box-shadow: white 0px 0px 7px 3px !important;
 	outline: none;
 }
 
@@ -382,7 +383,6 @@
 
 .vixen-volumeslider {
 	opacity: 0;
-	pointer-events: none;
 	
 	position: absolute;
 	min-height: 50px;
@@ -411,7 +411,6 @@
 
 .vixen-volumeslider.vixen-dragging {
 	opacity: 1;
-	pointer-events: normal;
 }
 
 .vixen-volumesliderinner {
@@ -431,7 +430,6 @@
 
 .vixen-volumegroup:hover .vixen-volumeslider {
 	opacity: 1;
-	pointer-events:normal;
 }
 
 /* TODO Gotta be a better way to do this. Going home now. */
@@ -443,7 +441,6 @@
 .vixen-mute:focus + .vixen-volumeslider,
 .vixen-mute:active + .vixen-volumeslider {
 	opacity: 1;
-	pointer-events: normal;
 }
 
 .vixen-errormsg {
@@ -590,7 +587,6 @@
 	top: 0px;
 	left: 0px;
 	opacity: 0;
-	color: black;
 }
 
 .vixen-dropdownwrapper:hover, .vixen-focus {
@@ -739,6 +735,9 @@
 	margin-left: -250px;
 	height: 60px;
 	
+	box-shadow:	rgb(42,42,42) 0px -1px 0px,
+				rgba(0,0,0,0.5) 0px 2px 4px !important;
+	
 	-webkit-border-radius: 10px;
 	-msie-border-radius: 10px;
 	-moz-border-radius: 10px;
@@ -785,7 +784,6 @@
 	border-radius: 8px;
 	
 	opacity: 1;
-	pointer-events: normal;
 }
 
 .vixen-fullscreen .vixen-thumb,

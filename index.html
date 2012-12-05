@@ -14,6 +14,7 @@
 			body {
 				margin: 0px;
 				padding: 0px;
+				padding-bottom: 5em;
 				font-family: "Helvetica Neue", Arial, Helvetica, sans-serif;
 			}
 			
@@ -76,11 +77,11 @@
 		<!-- Initialise Vixen! -->
 		<script>
 			var video;
-			(window.addEventListener||window.attachEvent)("load",function() {
+			document.addEventListener("DOMContentLoaded",function() {
 				video = Vixen.ify((document.querySelector ? document.querySelector("video") : null),function() {
 					alert("JWPlayer or a similar fallback would have loaded!");
 				});
-			});
+			},false);
 		</script>
 	</body>
 </html>

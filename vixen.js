@@ -430,14 +430,6 @@ setTimeout:true, clearTimeout:true, captionator:true */
 		// And switch off the native controls for the media element.
 		self.media.removeAttribute("controls");
 		
-		// Just check whether our sliders are horizontal or vertical...
-		// A simple width vs. height check should do.
-		self.ui.scrubber.vertical =
-			self.ui.scrubber.offsetHeight > self.ui.scrubber.offsetWidth;
-		
-		self.ui.volumeslider.vertical =
-			self.ui.volumeslider.offsetHeight > self.ui.volumeslider.offsetWidth;
-		
 		// Unprefix functions we need for fullscreen...
 		self.requestFullScreen = Vixen.unprefix("requestFullScreen",self.ui.container);
 		self.cancelFullScreen = Vixen.unprefix("cancelFullScreen",document);
@@ -486,21 +478,24 @@ setTimeout:true, clearTimeout:true, captionator:true */
 		}
 		
 		// Handle dragging for volume and scrubbing bar
-		self.ui.scrubber.ondrag(function(percentage) {
+		self.ui.scrubber.attachDragHandler(function(percentage) {
 			var vertical = self.ui.scrubber.vertical,
 				value = vertical ? percentage.y : percentage.x,
 				styleprop = vertical ? "height" : "width";
 			
 			self.ui.playprogress.s(styleprop,(value*100)+"%");
 			
-			// As long as we've got at least the metadata for the media
-			// resource, permit seeking.
-			if (self.media.readyState >= 1)
-				self.jumpTo(value * self.media.duration);
+			// Try and break the actual video seeking out of reflow operations
+			(window.setImmediate||window.setTimeout)(function() {
+				// As long as we've got at least the metadata for the media
+				// resource, permit seeking.
+				if (self.media.readyState >= 1)
+					self.jumpTo(value * self.media.duration);
+			},0);
 		});
 		
 		// And now volume slider. (y) assumes vertical orientation.
-		self.ui.volumeslider.ondrag(function(percentage) {
+		self.ui.volumeslider.attachDragHandler(function(percentage) {
 			var vertical = self.ui.volumeslider.vertical,
 				value = vertical ? percentage.y : percentage.x,
 				styleprop = vertical ? "height" : "width";
@@ -683,7 +678,14 @@ setTimeout:true, clearTimeout:true, captionator:true */
 				loadPercentage = (loadedTo/duration)*100;
 		}
 		
-		// TODO: Update for horizontal/vertical compatibility...
+		// Just check whether our sliders are horizontal or vertical...
+		// A simple width vs. height check should do.
+		self.ui.scrubber.vertical =
+			self.ui.scrubber.offsetHeight > self.ui.scrubber.offsetWidth;
+		
+		self.ui.volumeslider.vertical =
+			self.ui.volumeslider.offsetHeight > self.ui.volumeslider.offsetWidth;
+		
 		if (!self.ui.scrubber.dragging)
 			self.ui.playprogress.s(
 				(self.ui.scrubber.vertical ? "height" : "width"),
@@ -812,7 +814,9 @@ setTimeout:true, clearTimeout:true, captionator:true */
 		
 		switch (eventData.type) {
 			case "click":
-				self.playpause();
+				if (eventData.button === 0)
+					self.playpause();
+				
 				break;
 			
 			case "error":
@@ -1477,7 +1481,7 @@ setTimeout:true, clearTimeout:true, captionator:true */
 		
 		Returns the function in question, or false if a matching function could
 		not be located.
-	
+		
 	*/
 	Vixen.unprefix = function(name,lookIn) {
 		lookIn = lookIn || window;

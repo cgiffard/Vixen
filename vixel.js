@@ -100,8 +100,14 @@
 			}
 			
 			// Little helper for implementing draggable functionality
-			element.ondrag = function(handler) {
+			element.attachDragHandler = function(handler,accommodateThumb) {
+				
+				// Do we accomodate the thumb width/height in our offset calc?
+				accommodateThumb
+					= accommodateThumb !== undefined ? accommodateThumb : true;
+				
 				element.addEventListener("mousedown",function(evt) {
+					
 					// We don't listen to anything other than a nice left-click.
 					if (evt.button !== 0) return;
 					
@@ -110,8 +116,12 @@
 						on = window.addEventListener,
 						offsetLeft = 0,
 						offsetTop = 0,
-						pointerNode = element;
-						
+						pointerNode = element,
+						scrollY = (window.scrollY || window.pageYOffset),
+						scrollX = (window.scrollX || window.pageXOffset),
+						thumbDimensionX = accommodateThumb ? height : 0.1,
+						thumbDimensionY = accommodateThumb ? width : 0.1;
+					
 					element.c("dragging");
 					element.dragging = true;
 					
@@ -129,8 +139,8 @@
 						if (element.dragging) {
 							// We invert the y calculation to follow the
 							// logical visual order vertical sliders work...
-							var currentX = evt.clientX - offsetLeft,
-								currentY = evt.clientY - offsetTop,
+							var currentX = (evt.clientX + scrollX) - offsetLeft,
+								currentY = (evt.clientY + scrollY) - offsetTop,
 								x = currentX / width,
 								y = 1-(currentY / height);
 							
