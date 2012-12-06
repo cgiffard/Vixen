@@ -422,7 +422,38 @@ setTimeout:true, clearTimeout:true, captionator:true */
 			.attr("aria-live","off");
 		
 		// Now swap out the media for the container
-		c.replace(self.media,self.ui.container);
+		// If the user is on iOS, we need a different solution.
+		// I'm trying this messy clone to start with.
+		
+		if (navigator.userAgent &&
+			navigator.userAgent.match(/(iPhone|iPad)/g)) {
+			
+			// This gets hoisted, but it's clearer here.
+			var tmpMedia	= self.media,
+				mediaKind	= self.media.tagName.toLowerCase();
+			
+			console.log("Creating new",mediaKind);
+			
+			self.media = document.createElement(mediaKind);
+			
+			// Transfer attributes
+			[].slice.call(tmpMedia.attributes,0)
+				.forEach(function(attribute) {
+					self.media.setAttribute(attribute.name,attribute.value);
+				});
+			
+			// Transfer inner HTML
+			self.media.innerHTML = tmpMedia.innerHTML;
+			
+			// Replace the old media element with the container
+			c.replace(tmpMedia,self.ui.container);
+			
+			// Wrap the new element in our DSL sugar
+			w(self.media,"media");
+			
+		} else {
+			c.replace(self.media,self.ui.container);
+		}
 		
 		// And plug in the media...
 		self.ui.mediawrapper.a(self.media);
