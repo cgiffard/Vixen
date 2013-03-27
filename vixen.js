@@ -4,7 +4,7 @@
 document:true, module:true, createVixel:true, window:true, localStorage:true,
 setTimeout:true, clearTimeout:true, captionator:true */
 
-(function(glob) {
+;(function(glob) {
 	"use strict";
 	
 	

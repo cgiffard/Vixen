@@ -1,5 +1,5 @@
 // Little DSL for Vixen Element Creation (Vix-El, hence 'vixel'.)
-(function(glob) {
+;(function(glob) {
 	
 	// We publish a function that makes a new Vixel factory, and binds a var in
 	// the scope of that factory to the Vixen object which created it...

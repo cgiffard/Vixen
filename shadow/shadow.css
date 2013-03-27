@@ -108,6 +108,7 @@
 	height: auto;
 	position: relative;
 	top: 0px;
+	display: block;
 }
 
 .vixen-fullscreen .vixen-media {
